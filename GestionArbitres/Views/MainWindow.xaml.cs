@@ -1,5 +1,7 @@
 ﻿using System.Windows;
+using GestionArbitres.Models;
 using GestionArbitres.ViewModel;
+using SQLite;
 
 namespace GestionArbitres
 {

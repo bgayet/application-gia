@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using GestionArbitres.Models;
+using System;
 
 namespace GestionArbitres.Model
 {
     public interface IDataService
     {
         void GetData(Action<DataItem, Exception> callback);
+        void GetTableau(Action<Tableau, Exception> callback);
     }
 }

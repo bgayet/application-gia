@@ -11,6 +11,7 @@ namespace GestionArbitres
         static App()
         {
             DispatcherHelper.Initialize();
+            SQLiteDatabase.Initialize();
         }
     }
 }
