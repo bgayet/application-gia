@@ -1,13 +1,13 @@
 ﻿using GalaSoft.MvvmLight;
-using GestionArbitres.Model;
-using GestionArbitres.Models;
+using BGayet.GIA.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using BGayet.GIA.Services;
 
-namespace GestionArbitres.ViewModel
+namespace BGayet.GIA.ViewModels
 {
     /// <summary>
     /// This class contains properties that the main View can data bind to.

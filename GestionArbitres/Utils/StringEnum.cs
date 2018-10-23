@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Reflection;
 
-namespace GestionArbitres.Utils
+namespace BGayet.GIA.Utils
 {
 
     #region Class StringEnum

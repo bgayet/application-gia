@@ -7,8 +7,8 @@
     <ProjectGuid>{96A10B0B-9CE7-48C0-B49A-90995AB2CD27}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GestionArbitres</RootNamespace>
-    <AssemblyName>GestionArbitres</AssemblyName>
+    <RootNamespace>BGayet.GIA</RootNamespace>
+    <AssemblyName>BGayet.GIA</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -43,6 +43,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -115,9 +116,10 @@
     </ApplicationDefinition>
     <Compile Include="00-DataBase\SQLiteDatabase.cs" />
     <Compile Include="Design\DesignDataService.cs" />
-    <Compile Include="Models\ParamStatut.cs" />
-    <Compile Include="Models\ParamTableau.cs" />
-    <Compile Include="Models\ParamTableauParties.cs" />
+    <Compile Include="Models\Setting\ParamStatut.cs" />
+    <Compile Include="Models\Setting\ParamTableau.cs" />
+    <Compile Include="Models\Setting\ParamTableauParties.cs" />
+    <Compile Include="Models\Table.cs" />
     <Compile Include="Services\DataService.cs" />
     <Compile Include="Services\IDataService.cs" />
     <Compile Include="Models\Joueur.cs" />

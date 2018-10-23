@@ -1,6 +1,6 @@
 ﻿using SQLite;
 
-namespace GestionArbitres.Models
+namespace BGayet.GIA.Models
 {
     public class ParamStatut
     {

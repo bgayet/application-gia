@@ -1,17 +1,18 @@
-﻿using GestionArbitres.Models;
+﻿using BGayet.GIA.Database;
+using BGayet.GIA.Models;
 using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GestionArbitres.Model
+namespace BGayet.GIA.Services
 {
     public class DataService : IDataService
     {
-        public void GetData(Action<DataItem, Exception> callback)
-        {
-            throw new NotImplementedException();
-        }
+        //public void GetData(Action<DataItem, Exception> callback)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         public void GetTableau(Action<Tableau, Exception> callback)
         {

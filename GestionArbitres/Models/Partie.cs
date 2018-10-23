@@ -1,6 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 
-namespace GestionArbitres.Model
+namespace BGayet.GIA.Models
 {
     public class Partie : ObservableObject
     {
@@ -43,6 +43,7 @@ namespace GestionArbitres.Model
         public int Numero { get; set; }
         public int NumeroPhase { get; set; }
         public int NumeroTable { get; set; }
+        public int NumeroTableau { get; set; }
         public Partie PartieVainqueur { get; set; }
         public Partie PartiePerdant { get; set; }
         public int Position { get; set; }

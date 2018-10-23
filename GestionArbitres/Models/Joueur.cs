@@ -1,7 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
-using GestionArbitres.Utils;
+using BGayet.GIA.Utils;
 
-namespace GestionArbitres.Model
+namespace BGayet.GIA.Models
 {
     public class Joueur: ObservableObject
     {
@@ -10,6 +10,7 @@ namespace GestionArbitres.Model
         public string Numero { get; set; }
         public string Nom { get; set; }
         public string Prenom { get; set; }
+        public int NumeroTableau { get; set; }
         public StatutJoueur Statut
         {
             get => _statut;

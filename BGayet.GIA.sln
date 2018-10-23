@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GestionArbitres", "GestionArbitres\GestionArbitres.csproj", "{96A10B0B-9CE7-48C0-B49A-90995AB2CD27}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGayet.GIA", "GestionArbitres\BGayet.GIA.csproj", "{96A10B0B-9CE7-48C0-B49A-90995AB2CD27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,7 +1,7 @@
 ﻿using SQLite;
 using SQLiteNetExtensions.Attributes;
 
-namespace GestionArbitres.Models
+namespace BGayet.GIA.Models
 {
     public class ParamTableauParties
     {

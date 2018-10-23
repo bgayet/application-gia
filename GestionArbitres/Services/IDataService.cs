@@ -1,11 +1,11 @@
-﻿using GestionArbitres.Models;
+﻿using BGayet.GIA.Models;
 using System;
 
-namespace GestionArbitres.Model
+namespace BGayet.GIA.Services
 {
     public interface IDataService
     {
-        void GetData(Action<DataItem, Exception> callback);
+        //void GetData(Action<DataItem, Exception> callback);
         void GetTableau(Action<Tableau, Exception> callback);
     }
 }

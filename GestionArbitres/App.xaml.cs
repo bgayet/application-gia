@@ -1,7 +1,8 @@
 ﻿using System.Windows;
+using BGayet.GIA.Database;
 using GalaSoft.MvvmLight.Threading;
 
-namespace GestionArbitres
+namespace BGayet.GIA
 {
     /// <summary>
     /// Interaction logic for App.xaml

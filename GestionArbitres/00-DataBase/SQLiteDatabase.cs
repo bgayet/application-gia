@@ -1,9 +1,9 @@
-using GestionArbitres.Models;
+using BGayet.GIA.Models;
 using SQLite;
 using System;
 using System.IO;
 
-namespace GestionArbitres
+namespace BGayet.GIA.Database
 {
 
     public static class SQLiteDatabase
@@ -40,7 +40,7 @@ namespace GestionArbitres
 
                 using (var db = new SQLiteConnection(DataBasePath))
                 {
-                    Array.ForEach(lines, x => db.Execute(x.Trim()));
+                    //Array.ForEach(lines, x => db.Execute(x.Trim()));
                 }
             }
         }
@@ -83,7 +83,24 @@ namespace GestionArbitres
                     targetMigration > currentVersion)
                 {
                     db.CreateTable<ParamTableauParties>();
+                    db.CreateTable<ParamTableau>();
+                    db.Execute("");
 
+
+                    //string test = @"DROP TABLE [ParamTableauParties];
+                    //                CREATE TABLE [ParamTableauParties] (
+                    //                  [Id] INTEGER  NOT NULL
+                    //                , [IdTableau] bigint  NULL
+                    //                , [NumPartie] bigint  NULL
+                    //                , [NumPhase] bigint  NULL
+                    //                , [NumPartieVainqueur] bigint  NULL
+                    //                , [NumPartiePerdant] bigint  NULL
+                    //                , [Position] bigint  NULL
+                    //                , FOREIGN KEY(IdTableau) REFERENCES ParamTableau(Id)
+                    //                , CONSTRAINT [sqlite_master_PK_ParamTableauParties] PRIMARY KEY ([Id])
+                    //                );
+                    //                CREATE INDEX [ParamTableauParties_IdTableau] ON [ParamTableauParties] ([IdTableau] ASC);";
+                    
                     upgradedVersion = 1;
                     currentVersion = upgradedVersion;
                     db.ExecuteScalar<int>(string.Format("{0} = {1}", PragmaUserVersion, upgradedVersion));

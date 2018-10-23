@@ -1,9 +1,9 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
+using BGayet.GIA.Services;
 using Microsoft.Practices.ServiceLocation;
-using GestionArbitres.Model;
 
-namespace GestionArbitres.ViewModel
+namespace BGayet.GIA.ViewModels
 {
     /// <summary>
     /// This class contains static references to all the view models in the
@@ -14,6 +14,7 @@ namespace GestionArbitres.ViewModel
     /// </summary>
     public class ViewModelLocator
     {
+
         static ViewModelLocator()
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);

@@ -7,10 +7,10 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GestionArbitres")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("BGayet.GIA")]
+[assembly: AssemblyDescription("Gestion Informatisée des Arbitres")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("GestionArbitres")]
+[assembly: AssemblyProduct("BGayet.GIA")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]

@@ -1,9 +1,7 @@
-﻿using System;
-using System.IO;
-using SQLite;
-using GestionArbitres.Models;
+﻿using SQLite;
+using BGayet.GIA.Models;
 
-namespace GestionArbitres.Services
+namespace BGayet.GIA.Services
 {
     public class SqliteDataProvider
     {

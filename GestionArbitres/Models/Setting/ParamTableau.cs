@@ -2,7 +2,7 @@
 using SQLiteNetExtensions.Attributes;
 using System.Collections.Generic;
 
-namespace GestionArbitres.Models
+namespace BGayet.GIA.Models
 {
     public class ParamTableau
     {

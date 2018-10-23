@@ -1,9 +1,7 @@
-﻿using System.Windows;
-using GestionArbitres.Models;
-using GestionArbitres.ViewModel;
-using SQLite;
+﻿using BGayet.GIA.ViewModels;
+using System.Windows;
 
-namespace GestionArbitres
+namespace BGayet.GIA.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
