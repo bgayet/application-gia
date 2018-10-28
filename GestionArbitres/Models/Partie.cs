@@ -8,8 +8,9 @@ namespace BGayet.GIA.Models
         private Joueur _joueur2;
         private Joueur _arbitre;
         private Joueur _vainqueur;
+        private Table _table;
         private StatutPartie _statut;
-
+        
         public Joueur Joueur1
         {
             get => _joueur1;
@@ -34,6 +35,12 @@ namespace BGayet.GIA.Models
             set => Set(ref _vainqueur, value);
         }
 
+        public Table Table
+        {
+            get => _table;
+            set => Set(ref _table, value);
+        }
+
         public StatutPartie Statut
         {
             get => _statut;
@@ -42,19 +49,15 @@ namespace BGayet.GIA.Models
 
         public int Numero { get; set; }
         public int NumeroPhase { get; set; }
-        public int NumeroTable { get; set; }
-        public int NumeroTableau { get; set; }
         public Partie PartieVainqueur { get; set; }
         public Partie PartiePerdant { get; set; }
-        public int Position { get; set; }
     }
 
     public enum StatutPartie
     {
-        ALancer = 1,
-        EnAttente = 2,
-        EnCours = 3,
-        Terminee = 4,
+        ALancer = 0,
+        EnAttente = 1,
+        EnCours = 2,
+        Terminee = 3,
     }
-
 }

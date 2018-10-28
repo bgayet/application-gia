@@ -27,28 +27,32 @@ namespace BGayet.GIA.Database
         public static void Initialize()
         {
             SQLiteDbMigrator migrator = new SQLiteDbMigrator(DataBasePath);
-            int upgradedVersion = migrator.Update();
-            if (upgradedVersion == 1)
-            {
-                char separateur = ';';
-                string dataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DataFileName);
-                string scriptSql = File.ReadAllText(dataPath);
-                string[] lines = scriptSql
-                    .Replace(Environment.NewLine, string.Empty)
-                    .TrimEnd(separateur)
-                    .Split(separateur);
+            migrator.Update();
+            PopulateDatabase();
+        }
 
-                using (var db = new SQLiteConnection(DataBasePath))
-                {
-                    //Array.ForEach(lines, x => db.Execute(x.Trim()));
-                }
+        /// <summary>
+        /// Populate the database from sql script.
+        /// </summary>
+        public static void PopulateDatabase()
+        {
+            char separateur = ';';
+            string dataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DataFileName);
+            string scriptSql = File.ReadAllText(dataPath);
+            string[] lines = scriptSql
+                .Replace(Environment.NewLine, string.Empty)
+                .TrimEnd(separateur)
+                .Split(separateur);
+
+            using (var db = new SQLiteConnection(DataBasePath))
+            {
+                Array.ForEach(lines, x => db.Execute(x.Trim()));
             }
         }
     }
 
     public class SQLiteDbMigrator
     {
-
         private const string PragmaUserVersion = "PRAGMA user_version";
         private readonly string _dataBasePath;
 
@@ -61,52 +65,80 @@ namespace BGayet.GIA.Database
         /// <summary>
         /// Updates the database to the latest migration.
         /// </summary>
-        public int Update() => Update(targetMigration: null);
+        public void Update() => Update(currentVersion: null, targetVersion: null);
 
         /// <summary>
         /// Updates the database to a given migration.
         /// </summary>
-        /// <param name="targetMigration">The migration to upgrade</param>
-        public int Update(int? targetMigration)
+        /// <param name="currentVersion">The or version</param>
+        /// <param name="targetVersion">The migration to upgrade</param>
+        public void Update(int? currentVersion = null, int? targetVersion = null)
         {
-            if (!targetMigration.HasValue)
-                targetMigration = int.MaxValue;
+            if (!targetVersion.HasValue)
+                targetVersion = int.MaxValue;
 
             using (var db = new SQLiteConnection(_dataBasePath))
             {
-                string currentVersionStr = db.ExecuteScalar<string>(PragmaUserVersion);
-                int currentVersion = Convert.ToInt32(currentVersionStr);
-                int upgradedVersion = 0;
+                if (!currentVersion.HasValue)
+                {
+                    string currentVersionStr = db.ExecuteScalar<string>(PragmaUserVersion);
+                    currentVersion = Convert.ToInt32(currentVersionStr);
+                }
 
                 // V0 -> V1
                 if (currentVersion == 0 &&
-                    targetMigration > currentVersion)
+                    targetVersion > currentVersion)
                 {
-                    db.CreateTable<ParamTableauParties>();
                     db.CreateTable<ParamTableau>();
-                    db.Execute("");
 
+                    // l'ORM sqlite-net ne gère pas la création des clés étrangères
+                    string queryCreateParamTableauParties =
+                        @"CREATE TABLE [PARAM_TABLEAU_PARTIES] (
+                                  [Id] INTEGER  NOT NULL
+                                , [IdParamTableau] bigint  NULL
+                                , [IdParamTableauListes] bigint  NULL
+                                , [NumPartie] bigint  NULL
+                                , [NumPhase] bigint  NULL
+                                , [NumPartieVainqueur] bigint  NULL
+                                , [NumPartiePerdant] bigint  NULL
+                                , [Position] bigint  NULL
+                                , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
+                                , FOREIGN KEY(IdParamTableauListes) REFERENCES PARAM_TABLEAU_LISTES (Id)
+                                , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_PARTIES] PRIMARY KEY ([Id]));
+                            CREATE INDEX [PARAM_TABLEAU_PARTIES_IdParamTableau] ON [PARAM_TABLEAU_PARTIES] ([IdParamTableau] ASC);
+                            CREATE INDEX [PARAM_TABLEAU_PARTIES_IdParamTableauListes] ON [PARAM_TABLEAU_PARTIES] ([IdParamTableauListes] ASC);";
 
-                    //string test = @"DROP TABLE [ParamTableauParties];
-                    //                CREATE TABLE [ParamTableauParties] (
-                    //                  [Id] INTEGER  NOT NULL
-                    //                , [IdTableau] bigint  NULL
-                    //                , [NumPartie] bigint  NULL
-                    //                , [NumPhase] bigint  NULL
-                    //                , [NumPartieVainqueur] bigint  NULL
-                    //                , [NumPartiePerdant] bigint  NULL
-                    //                , [Position] bigint  NULL
-                    //                , FOREIGN KEY(IdTableau) REFERENCES ParamTableau(Id)
-                    //                , CONSTRAINT [sqlite_master_PK_ParamTableauParties] PRIMARY KEY ([Id])
-                    //                );
-                    //                CREATE INDEX [ParamTableauParties_IdTableau] ON [ParamTableauParties] ([IdTableau] ASC);";
-                    
-                    upgradedVersion = 1;
-                    currentVersion = upgradedVersion;
-                    db.ExecuteScalar<int>(string.Format("{0} = {1}", PragmaUserVersion, upgradedVersion));
+                    db.Execute(queryCreateParamTableauParties);
+
+                    string queryCreateParamTableauJoueurs =
+                        @"CREATE TABLE [PARAM_TABLEAU_JOUEURS] (
+                                  [Id] INTEGER  NOT NULL
+                                , [IdParamTableau] bigint  NULL
+                                , [NumLigneFichier] bigint  NULL
+                                , [NumPartieTableau] bigint  NULL
+                                , [ClassementJoueur1] bigint  NULL
+                                , [ClassementJoueur2] bigint  NULL
+                                , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
+                                , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_JOUEURS] PRIMARY KEY ([Id]));
+                            CREATE INDEX [PARAM_TABLEAU_JOUEURS_IdParamTableau] ON [PARAM_TABLEAU_JOUEURS] ([IdParamTableau] ASC);";
+
+                    db.Execute(queryCreateParamTableauJoueurs);
+
+                    string queryCreateParamTableauListes =
+                            @"CREATE TABLE [PARAM_TABLEAU_LISTES] (
+                                  [Id] INTEGER  NOT NULL
+                                , [IdParamTableau] bigint  NULL
+                                , [Classement] bigint  NULL
+                                , [Nombre] bigint  NULL
+                                , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
+                                , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_LISTES] PRIMARY KEY ([Id]));
+                            CREATE INDEX [PARAM_TABLEAU_LISTES_IdParamTableau] ON [PARAM_TABLEAU_LISTES] ([IdParamTableau] ASC);";
+
+                    db.Execute(queryCreateParamTableauListes);
+
+                    currentVersion = 1;
+                    db.ExecuteScalar<int>(string.Format("{0} = {1}", PragmaUserVersion, currentVersion));
                 }
-
-                return upgradedVersion;
 
                 // V1 -> V2
                 //if (currentVersion == 1 &&

@@ -10,7 +10,7 @@ namespace BGayet.GIA.Utils
     /// <summary>
     /// Helper class for working with 'extended' enums using <see cref="StringValueAttribute"/> attributes.
     /// </summary>
-    public class StringEnum
+    public class StringEnumHelper
     {
         #region Instance implementation
 
@@ -18,10 +18,10 @@ namespace BGayet.GIA.Utils
         private static Hashtable _stringValues = new Hashtable();
 
         /// <summary>
-        /// Creates a new <see cref="StringEnum"/> instance.
+        /// Creates a new <see cref="StringEnumHelper"/> instance.
         /// </summary>
         /// <param name="enumType">Enum type.</param>
-        public StringEnum(Type enumType)
+        public StringEnumHelper(Type enumType)
         {
             if (!enumType.IsEnum)
                 throw new ArgumentException(String.Format("Supplied type must be an Enum.  Type was {0}", enumType.ToString()));

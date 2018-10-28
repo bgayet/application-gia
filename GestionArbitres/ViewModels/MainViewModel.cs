@@ -6,6 +6,12 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using BGayet.GIA.Services;
+using BGayet.GIA.Utils;
+using System.Linq;
+using System.Collections.Generic;
+using System;
+using System.Data;
+using Microsoft.Win32;
 
 namespace BGayet.GIA.ViewModels
 {
@@ -18,7 +24,7 @@ namespace BGayet.GIA.ViewModels
     public class MainViewModel : ViewModelBase
     {
         private readonly IDataService _dataService;
-
+        
         /// <summary>
         /// The <see cref="WelcomeTitle" /> property's name.
         /// </summary>
@@ -32,15 +38,11 @@ namespace BGayet.GIA.ViewModels
         /// </summary>
         public string WelcomeTitle
         {
-            get
-            {
-                return _welcomeTitle;
-            }
-            set
-            {
-                Set(ref _welcomeTitle, value);
-            }
+            get => _welcomeTitle;
+            set => Set(ref _welcomeTitle, value);
         }
+
+        public Tableau Tableau { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
@@ -48,18 +50,6 @@ namespace BGayet.GIA.ViewModels
         public MainViewModel(IDataService dataService)
         {
             _dataService = dataService;
-            InitializeTableau();
-            //_dataService.GetData(
-            //    (item, error) =>
-            //    {
-            //        if (error != null)
-            //        {
-            //            // Report error here
-            //            return;
-            //        }
-
-            //        WelcomeTitle = item.Title;
-            //    });
         }
 
         private void OnMouseLeftButtonDown(object sender, RoutedEventArgs e)
@@ -74,19 +64,135 @@ namespace BGayet.GIA.ViewModels
             partie.Statut = StatutPartie.EnCours;
         }
 
-        private void InitializeTableau()
+        private void InitializeParties(ParamTableau paramTableau)
         {
-            Tableau tableau;
-            _dataService.GetTableau(
-                (item, error) =>
+            var result = paramTableau.ParamTableauParties
+                .OrderBy(x => x.Position)
+                .Select(param => new Partie()
                 {
-                   if (error != null)
-                   {
-                        // Report error here
-                        return;
-                   }
-                   tableau = item;
-                });
+                    Numero = param.NumPartie,
+                    NumeroPhase = param.NumPhase,
+                    PartieVainqueur = new Partie() { Numero = param.NumPartieVainqueur },
+                    PartiePerdant = new Partie() { Numero = param.NumPartiePerdant },
+                    Statut = StatutPartie.ALancer
+                }).ToList();
+
+            result.ForEach(partie =>
+            {
+                partie.PartieVainqueur = result.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
+                partie.PartiePerdant = result.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
+            });
+
+            Tableau.Parties = result;
+        }
+
+        private void InitializeTables(ParamTableau paramTableau, DataTable dt)
+        {
+            var result = new List<Table>();
+
+            foreach (var param in paramTableau.ParamTableauJoueurs)
+            {
+                DataRow row = dt.Rows[param.NumLigneFichier - 2];
+
+                string numTableStr = Convert.ToString(row[Constants.FichierEnteteNumTable]);
+                if (!string.IsNullOrEmpty(numTableStr))
+                {
+                    int numTableInt = Convert.ToInt32(numTableStr);
+                    if (numTableInt > 0)
+                    {
+                        Table table = new Table() { Numero = numTableInt };                     
+                        result.Add(table);
+                        Partie partie = Tableau.Parties.Find(x => x.Numero == param.NumPartieTableau);
+                        partie.Table = table;
+                    }
+                }
+            }
+
+            Tableau.Tables = result;
+        }
+
+        private void InitializeJoueurs(ParamTableau paramTableau, DataTable dt)
+        {
+            var result = new List<Joueur>();
+
+            foreach (var param in paramTableau.ParamTableauJoueurs)
+            {
+                DataRow row = dt.Rows[param.NumLigneFichier - 2];
+                Partie partie = Tableau.Parties.Find(x => x.Numero == param.NumPartieTableau);
+
+                if (param.ClassementJoueur1.HasValue)
+                {
+                    Joueur joueur1 = new Joueur
+                    {
+                        Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ1]),
+                        Nom = Convert.ToString(row[Constants.FichierEnteteNomJ1]),
+                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ1]),
+                        Classement = param.ClassementJoueur1.Value
+                    };
+
+                    if (joueur1.Nom.ToUpper() == Constants.NomJoueurAbsent)
+                        joueur1.Statut = StatutJoueur.Absent;
+
+                    result.Add(joueur1);
+                    partie.Joueur1 = joueur1;
+                }
+
+                if (param.ClassementJoueur2.HasValue)
+                {
+                    Joueur joueur2 = new Joueur
+                    {
+                        Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ2]),
+                        Nom = Convert.ToString(row[Constants.FichierEnteteNomJ2]),
+                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ2]),
+                        Classement = param.ClassementJoueur2.Value
+                    };
+
+                    if (joueur2.Nom.ToUpper() == Constants.NomJoueurAbsent)
+                        joueur2.Statut = StatutJoueur.Absent;
+
+                    result.Add(joueur2);
+                    partie.Joueur2 = joueur2;
+                }
+            }
+
+            Tableau.Joueurs = result;
+        }
+
+        private void InitializeTableau(int id)
+        {
+            Tableau = new Tableau();
+
+            // Sélection du fichier
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = Constants.FichierExcelFilter;
+            if (openFileDialog.ShowDialog() == false)
+                return;
+
+            // Lecture fichier dans Datatable
+            DataTable dataTable = ExcelSheetHelper.ReadAsDataTable(openFileDialog.FileName);
+
+            // Récupération du paramétrage
+            ParamTableau paramTableau = new ParamTableau();
+            _dataService.GeParamTableauById(id, (item, error) =>
+            {
+                //ManageError(error);
+                paramTableau = item;
+            });
+
+            // Initialisation Parties/Joueurs/Tables
+            InitializeParties(paramTableau);
+            InitializeJoueurs(paramTableau, dataTable);
+            InitializeTables(paramTableau, dataTable);
+        }
+
+        private void ManageError(Exception error)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void InitializeAutre()
+        { 
+
 
             int index = 0;
             for (int i = 1; i < 5; i++)
@@ -167,6 +273,5 @@ namespace BGayet.GIA.ViewModels
                 }
             }
         }
-
     }
 }
