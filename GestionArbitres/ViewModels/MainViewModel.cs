@@ -15,58 +15,31 @@ using Microsoft.Win32;
 
 namespace BGayet.GIA.ViewModels
 {
-    /// <summary>
-    /// This class contains properties that the main View can data bind to.
-    /// <para>
-    /// See http://www.mvvmlight.net
-    /// </para>
-    /// </summary>
+
     public class MainViewModel : ViewModelBase
     {
         private readonly IDataService _dataService;
-        
-        /// <summary>
-        /// The <see cref="WelcomeTitle" /> property's name.
-        /// </summary>
-        public const string WelcomeTitlePropertyName = "WelcomeTitle";
 
-        private string _welcomeTitle = string.Empty;
-
-        /// <summary>
-        /// Gets the WelcomeTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string WelcomeTitle
-        {
-            get => _welcomeTitle;
-            set => Set(ref _welcomeTitle, value);
-        }
-
+        public ParamTableau _paramTableau;
         public Tableau Tableau { get; set; }
+        public ParamTableau ParamTableau { get; set; }
+
+        public List<ListViewInscritsItemModel> ListViewInscritsItems { get; set; } 
+
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
+            ListViewInscritsItems = new List<ListViewInscritsItemModel>();
             _dataService = dataService;
+            InitializeTableau(1);
         }
 
-        private void OnMouseLeftButtonDown(object sender, RoutedEventArgs e)
+        private void InitializeParties()
         {
-            var partie = ((Rectangle)sender).Tag as Partie;
-            partie.Statut = StatutPartie.Terminee;
-        }
-
-        private void OnMouseRightButtonDown(object sender, RoutedEventArgs e)
-        {
-            var partie = ((Rectangle)sender).Tag as Partie;
-            partie.Statut = StatutPartie.EnCours;
-        }
-
-        private void InitializeParties(ParamTableau paramTableau)
-        {
-            var result = paramTableau.ParamTableauParties
+            var result = _paramTableau.ParamTableauParties
                 .OrderBy(x => x.Position)
                 .Select(param => new Partie()
                 {
@@ -86,11 +59,11 @@ namespace BGayet.GIA.ViewModels
             Tableau.Parties = result;
         }
 
-        private void InitializeTables(ParamTableau paramTableau, DataTable dt)
+        private void InitializeTables(DataTable dt)
         {
             var result = new List<Table>();
 
-            foreach (var param in paramTableau.ParamTableauJoueurs)
+            foreach (var param in _paramTableau.ParamTableauJoueurs)
             {
                 DataRow row = dt.Rows[param.NumLigneFichier - 2];
 
@@ -111,11 +84,11 @@ namespace BGayet.GIA.ViewModels
             Tableau.Tables = result;
         }
 
-        private void InitializeJoueurs(ParamTableau paramTableau, DataTable dt)
+        private void InitializeJoueurs(DataTable dt)
         {
-            var result = new List<Joueur>();
+            var joueurs = new List<Joueur>();
 
-            foreach (var param in paramTableau.ParamTableauJoueurs)
+            foreach (var param in _paramTableau.ParamTableauJoueurs)
             {
                 DataRow row = dt.Rows[param.NumLigneFichier - 2];
                 Partie partie = Tableau.Parties.Find(x => x.Numero == param.NumPartieTableau);
@@ -126,15 +99,22 @@ namespace BGayet.GIA.ViewModels
                     {
                         Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ1]),
                         Nom = Convert.ToString(row[Constants.FichierEnteteNomJ1]),
-                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ1]),
-                        Classement = param.ClassementJoueur1.Value
+                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ1])
                     };
 
                     if (joueur1.Nom.ToUpper() == Constants.NomJoueurAbsent)
                         joueur1.Statut = StatutJoueur.Absent;
 
-                    result.Add(joueur1);
+                    ListViewInscritsItems.Add(new ListViewInscritsItemModel()
+                    {
+                        Joueur = joueur1,
+                        CompteurArbitre = 0,
+                        Classement = param.ClassementJoueur1.Value,
+                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur1.Value).NumGroupe
+                    });
+
                     partie.Joueur1 = joueur1;
+                    joueurs.Add(joueur1);
                 }
 
                 if (param.ClassementJoueur2.HasValue)
@@ -143,19 +123,26 @@ namespace BGayet.GIA.ViewModels
                     {
                         Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ2]),
                         Nom = Convert.ToString(row[Constants.FichierEnteteNomJ2]),
-                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ2]),
-                        Classement = param.ClassementJoueur2.Value
+                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ2])
                     };
 
                     if (joueur2.Nom.ToUpper() == Constants.NomJoueurAbsent)
                         joueur2.Statut = StatutJoueur.Absent;
 
-                    result.Add(joueur2);
+                    ListViewInscritsItems.Add(new ListViewInscritsItemModel()
+                    {
+                        Joueur = joueur2,
+                        CompteurArbitre = 0,
+                        Classement = param.ClassementJoueur2.Value,
+                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur2.Value).NumGroupe
+                    });
+
                     partie.Joueur2 = joueur2;
+                    joueurs.Add(joueur2);
                 }
             }
 
-            Tableau.Joueurs = result;
+            Tableau.Joueurs = joueurs;
         }
 
         private void InitializeTableau(int id)
@@ -172,17 +159,30 @@ namespace BGayet.GIA.ViewModels
             DataTable dataTable = ExcelSheetHelper.ReadAsDataTable(openFileDialog.FileName);
 
             // Récupération du paramétrage
-            ParamTableau paramTableau = new ParamTableau();
             _dataService.GeParamTableauById(id, (item, error) =>
             {
                 //ManageError(error);
-                paramTableau = item;
+                _paramTableau = item;
             });
 
             // Initialisation Parties/Joueurs/Tables
-            InitializeParties(paramTableau);
-            InitializeJoueurs(paramTableau, dataTable);
-            InitializeTables(paramTableau, dataTable);
+            InitializeParties();
+            InitializeJoueurs(dataTable);
+            InitializeTables(dataTable);
+            //InitializeListView();
+        }
+
+        private void LancerPartie(Partie partie)
+        {
+            partie.Statut = StatutPartie.EnCours;
+        }
+
+        private void ArreterPartie(Partie partie)
+        {
+            partie.Statut = StatutPartie.Terminee;
+            partie.Joueur1.Statut = StatutJoueur.Libre;
+            partie.Joueur2.Statut = StatutJoueur.Libre;
+            partie.Arbitre.Statut = StatutJoueur.Libre;
         }
 
         private void ManageError(Exception error)
@@ -207,8 +207,6 @@ namespace BGayet.GIA.ViewModels
                     Binding bindingTagProperty = new Binding(string.Format("Parties[{0}]", index));
                     rect.SetBinding(FrameworkElement.TagProperty, bindingTagProperty);
 
-                    rect.MouseLeftButtonDown += OnMouseLeftButtonDown;
-                    rect.MouseRightButtonDown += OnMouseRightButtonDown;
 
                     Style style = new Style(typeof(Rectangle));
                     DataTrigger etatTrigger = new DataTrigger()

@@ -4,12 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:local="clr-namespace:BGayet.GIA.Views"
         mc:Ignorable="d ignore"
         Height="300"
         Width="300"
         Title="MVVM Light Application"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
-    
+
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,16 +19,34 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid x:Name="LayoutRoot">
+    <Grid Margin="10">
+        <ListView Name="lvInscrits" ItemsSource="{Binding ListViewInscritsItems}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Numero" Width="50" DisplayMemberBinding="{Binding Joueur.Numero}" />
+                    <GridViewColumn Header="Nom" Width="50" DisplayMemberBinding="{Binding Joueur.Nom}" />
+                    <GridViewColumn Header="Prenom" Width="50" DisplayMemberBinding="{Binding Joueur.Prenom}" />
+                    <GridViewColumn Header="Forfait" Width="50" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding EstForfait}" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Compteur" Width="50" DisplayMemberBinding="{Binding CompteurArbitre}" />
+                </GridView>
+            </ListView.View>
 
-        <TextBlock FontSize="36"
-                   FontWeight="Bold"
-                   Foreground="Purple"
-                   Text="{Binding WelcomeTitle}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   TextWrapping="Wrap" />
-
-
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+        </ListView>
     </Grid>
+
 </Window>

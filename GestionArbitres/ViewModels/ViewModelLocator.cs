@@ -1,5 +1,4 @@
-﻿using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Ioc;
+﻿using GalaSoft.MvvmLight.Ioc;
 using BGayet.GIA.Services;
 using Microsoft.Practices.ServiceLocation;
 

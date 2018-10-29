@@ -96,17 +96,15 @@ namespace BGayet.GIA.Database
                         @"CREATE TABLE [PARAM_TABLEAU_PARTIES] (
                                   [Id] INTEGER  NOT NULL
                                 , [IdParamTableau] bigint  NULL
-                                , [IdParamTableauListes] bigint  NULL
                                 , [NumPartie] bigint  NULL
                                 , [NumPhase] bigint  NULL
+                                , [NumGroupeArbitre] bigint  NULL
                                 , [NumPartieVainqueur] bigint  NULL
                                 , [NumPartiePerdant] bigint  NULL
                                 , [Position] bigint  NULL
                                 , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
-                                , FOREIGN KEY(IdParamTableauListes) REFERENCES PARAM_TABLEAU_LISTES (Id)
                                 , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_PARTIES] PRIMARY KEY ([Id]));
-                            CREATE INDEX [PARAM_TABLEAU_PARTIES_IdParamTableau] ON [PARAM_TABLEAU_PARTIES] ([IdParamTableau] ASC);
-                            CREATE INDEX [PARAM_TABLEAU_PARTIES_IdParamTableauListes] ON [PARAM_TABLEAU_PARTIES] ([IdParamTableauListes] ASC);";
+                            CREATE INDEX [PARAM_TABLEAU_PARTIES_IdParamTableau] ON [PARAM_TABLEAU_PARTIES] ([IdParamTableau] ASC);";
 
                     db.Execute(queryCreateParamTableauParties);
 
@@ -125,14 +123,15 @@ namespace BGayet.GIA.Database
                     db.Execute(queryCreateParamTableauJoueurs);
 
                     string queryCreateParamTableauListes =
-                            @"CREATE TABLE [PARAM_TABLEAU_LISTES] (
+                            @"CREATE TABLE [PARAM_TABLEAU_GROUPES] (
                                   [Id] INTEGER  NOT NULL
                                 , [IdParamTableau] bigint  NULL
-                                , [Classement] bigint  NULL
-                                , [Nombre] bigint  NULL
+                                , [NumGroupe] bigint  NULL
+                                , [ClassementJoueurs] bigint  NULL
+                                , [NombreJoueurs] bigint  NULL
                                 , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
-                                , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_LISTES] PRIMARY KEY ([Id]));
-                            CREATE INDEX [PARAM_TABLEAU_LISTES_IdParamTableau] ON [PARAM_TABLEAU_LISTES] ([IdParamTableau] ASC);";
+                                , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_GROUPES] PRIMARY KEY ([Id]));
+                            CREATE INDEX [PARAM_TABLEAU_GROUPES_IdParamTableau] ON [PARAM_TABLEAU_GROUPES] ([IdParamTableau] ASC);";
 
                     db.Execute(queryCreateParamTableauListes);
 

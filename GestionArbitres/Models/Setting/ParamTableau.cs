@@ -17,7 +17,7 @@ namespace BGayet.GIA.Models
         public List<ParamTableauJoueurs> ParamTableauJoueurs { get; set; }
 
         [OneToMany]
-        public List<ParamTableauListes> ParamTableauListes { get; set; }
+        public List<ParamTableauGroupes> ParamTableauGroupes { get; set; }
 
         public string Libelle { get; set; }
         public int Hauteur { get; set; }

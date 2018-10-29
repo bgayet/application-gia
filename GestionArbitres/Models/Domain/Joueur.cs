@@ -23,7 +23,6 @@ namespace BGayet.GIA.Models
         public string Numero { get; set; }
         public string Nom { get; set; }
         public string Prenom { get; set; }
-        public int Classement { get; set; }
     }
 
     public enum StatutJoueur

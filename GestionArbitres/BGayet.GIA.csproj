@@ -176,16 +176,17 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="00-DataBase\SQLiteDatabase.cs" />
+    <Compile Include="Models\ListViewInscritsItemModel.cs" />
     <Compile Include="Models\Setting\ParamTableau.cs" />
     <Compile Include="Models\Setting\ParamTableauJoueurs.cs" />
-    <Compile Include="Models\Setting\ParamTableauListes.cs" />
+    <Compile Include="Models\Setting\ParamTableauGroupes.cs" />
     <Compile Include="Models\Setting\ParamTableauParties.cs" />
-    <Compile Include="Models\Table.cs" />
+    <Compile Include="Models\Domain\Table.cs" />
     <Compile Include="Services\DataService.cs" />
     <Compile Include="Services\IDataService.cs" />
-    <Compile Include="Models\Joueur.cs" />
-    <Compile Include="Models\Partie.cs" />
-    <Compile Include="Models\Tableau.cs" />
+    <Compile Include="Models\Domain\Joueur.cs" />
+    <Compile Include="Models\Domain\Partie.cs" />
+    <Compile Include="Models\Domain\Tableau.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\ExcelSheetHelper.cs" />
     <Compile Include="Utils\StringEnumHelper.cs" />

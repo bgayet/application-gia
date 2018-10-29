@@ -12,11 +12,9 @@ namespace BGayet.GIA.Models
         [ForeignKey(typeof(ParamTableau))]
         public int IdParamTableau { get; set; }
 
-        [ForeignKey(typeof(ParamTableauListes))]
-        public int IdParamTableauListes { get; set; }
-
         public int NumPartie { get; set; }
-        public int NumPhase { get; set; }      
+        public int NumPhase { get; set; }
+        public int NumGroupeArbitre { get; set; }
         public int NumPartieVainqueur { get; set; }
         public int NumPartiePerdant { get; set; }
         public int Position { get; set; }
