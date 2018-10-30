@@ -5,8 +5,14 @@ namespace BGayet.GIA.Models
 {
     public class Joueur: ObservableObject
     {
-        private StatutJoueur _statut;
         private bool _estForfait;
+        private bool _estAbsent;
+
+        public bool EstAbsent
+        {
+            get => _estAbsent;
+            set => Set(ref _estAbsent, value);
+        }
 
         public bool EstForfait
         {
@@ -14,21 +20,8 @@ namespace BGayet.GIA.Models
             set => Set(ref _estForfait, value);
         }
 
-        public StatutJoueur Statut
-        {
-            get => _statut;
-            set => Set(ref _statut, value);
-        }
-
         public string Numero { get; set; }
         public string Nom { get; set; }
         public string Prenom { get; set; }
-    }
-
-    public enum StatutJoueur
-    {
-        [StringValue("L")] Libre = 0,
-        [StringValue("O")] Occupe = 1,
-        [StringValue("A")] Absent = 2,
     }
 }

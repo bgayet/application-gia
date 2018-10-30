@@ -24,7 +24,7 @@ namespace BGayet.GIA.ViewModels
         public Tableau Tableau { get; set; }
         public ParamTableau ParamTableau { get; set; }
 
-        public List<ListViewInscritsItemModel> ListViewInscritsItems { get; set; } 
+        public List<JoueurModel> ListJoueurModel { get; set; } 
 
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace BGayet.GIA.ViewModels
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
-            ListViewInscritsItems = new List<ListViewInscritsItemModel>();
+            ListJoueurModel = new List<JoueurModel>();
             _dataService = dataService;
             InitializeTableau(1);
         }
@@ -103,9 +103,9 @@ namespace BGayet.GIA.ViewModels
                     };
 
                     if (joueur1.Nom.ToUpper() == Constants.NomJoueurAbsent)
-                        joueur1.Statut = StatutJoueur.Absent;
+                        joueur1.EstAbsent = true;
 
-                    ListViewInscritsItems.Add(new ListViewInscritsItemModel()
+                    ListJoueurModel.Add(new JoueurModel()
                     {
                         Joueur = joueur1,
                         CompteurArbitre = 0,
@@ -127,9 +127,9 @@ namespace BGayet.GIA.ViewModels
                     };
 
                     if (joueur2.Nom.ToUpper() == Constants.NomJoueurAbsent)
-                        joueur2.Statut = StatutJoueur.Absent;
+                        joueur2.EstAbsent = true;
 
-                    ListViewInscritsItems.Add(new ListViewInscritsItemModel()
+                    ListJoueurModel.Add(new JoueurModel()
                     {
                         Joueur = joueur2,
                         CompteurArbitre = 0,
@@ -180,9 +180,9 @@ namespace BGayet.GIA.ViewModels
         private void ArreterPartie(Partie partie)
         {
             partie.Statut = StatutPartie.Terminee;
-            partie.Joueur1.Statut = StatutJoueur.Libre;
-            partie.Joueur2.Statut = StatutJoueur.Libre;
-            partie.Arbitre.Statut = StatutJoueur.Libre;
+            //partie.Joueur1.Statut = StatutJoueur.Libre;
+            //partie.Joueur2.Statut = StatutJoueur.Libre;
+            //partie.Arbitre.Statut = StatutJoueur.Libre;
         }
 
         private void ManageError(Exception error)

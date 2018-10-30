@@ -20,7 +20,7 @@
     </Window.Resources>
 
     <Grid Margin="10">
-        <ListView Name="lvInscrits" ItemsSource="{Binding ListViewInscritsItems}">
+        <ListView Name="lvInscrits" ItemsSource="{Binding ListJoueurModel}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Numero" Width="50" DisplayMemberBinding="{Binding Joueur.Numero}" />
@@ -30,6 +30,13 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding EstForfait}" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Absent" Width="50" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding EstAbsent}" HorizontalAlignment="Center" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

@@ -176,7 +176,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="00-DataBase\SQLiteDatabase.cs" />
-    <Compile Include="Models\ListViewInscritsItemModel.cs" />
+    <Compile Include="Models\JoueurModel.cs" />
     <Compile Include="Models\Setting\ParamTableau.cs" />
     <Compile Include="Models\Setting\ParamTableauJoueurs.cs" />
     <Compile Include="Models\Setting\ParamTableauGroupes.cs" />
