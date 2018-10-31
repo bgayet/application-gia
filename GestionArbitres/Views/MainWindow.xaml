@@ -3,12 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:model="clr-namespace:BGayet.GIA.Models"
         xmlns:ignore="http://www.galasoft.ch/ignore"
-        xmlns:local="clr-namespace:BGayet.GIA.Views"
         mc:Ignorable="d ignore"
-        Height="300"
-        Width="300"
-        Title="MVVM Light Application"
+        Height="560"
+        Width="1130"
+        ResizeMode="NoResize"
+        Title="GIA - Gestion Informatisée des Arbitres"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 
     <Window.Resources>
@@ -18,42 +19,149 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
+    
+    <StackPanel Orientation="Vertical">
+        <Menu x:Name="menu">
+            <MenuItem Header="Fichier" Height="21" >
+                <MenuItem Header="Nouveau" HorizontalAlignment="Left">
+                    <MenuItem.ItemsSource>
+                        <CompositeCollection>
+                            <CollectionContainer Collection="{Binding ParamTableau}" />
+                        </CompositeCollection>
+                    </MenuItem.ItemsSource>
+                    <MenuItem.ItemContainerStyle>
+                        <Style>
+                            <Setter Property="MenuItem.Header" Value="{Binding Libelle}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        <StackPanel Orientation="Horizontal" Background="#FF181818">
+            <StackPanel Orientation="Vertical">
+                <Grid Height="500">
+                    <ListView Name="lvInscrits" ItemsSource="{Binding Tableau.Joueurs}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Numero" Width="60" DisplayMemberBinding="{Binding Numero}" />
+                                <GridViewColumn Header="Nom" Width="60" DisplayMemberBinding="{Binding Nom}" />
+                                <GridViewColumn Header="Prenom" Width="60" DisplayMemberBinding="{Binding Prenom}" />
+                                <GridViewColumn Header="Forfait" Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding EstForfait}" HorizontalAlignment="Center" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Absent" Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding EstAbsent}" HorizontalAlignment="Center" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Compteur" Width="80" DisplayMemberBinding="{Binding CompteurArbitre}" />
+                            </GridView>
+                        </ListView.View>
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplateSelector="{StaticResource MyTemplateSelectorObj}"/>
+                        </ListView.GroupStyle>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutJoueur.Occupe}">
+                                        <Setter Property="Background" Value="Beige" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </Grid>
+            </StackPanel>
+            
 
-    <Grid Margin="10">
-        <ListView Name="lvInscrits" ItemsSource="{Binding ListJoueurModel}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Numero" Width="50" DisplayMemberBinding="{Binding Joueur.Numero}" />
-                    <GridViewColumn Header="Nom" Width="50" DisplayMemberBinding="{Binding Joueur.Nom}" />
-                    <GridViewColumn Header="Prenom" Width="50" DisplayMemberBinding="{Binding Joueur.Prenom}" />
-                    <GridViewColumn Header="Forfait" Width="50" >
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <CheckBox IsChecked="{Binding EstForfait}" HorizontalAlignment="Center" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Absent" Width="50" >
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <CheckBox IsChecked="{Binding EstAbsent}" HorizontalAlignment="Center" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Compteur" Width="50" DisplayMemberBinding="{Binding CompteurArbitre}" />
-                </GridView>
-            </ListView.View>
-
-            <ListView.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </ListView.GroupStyle>
-        </ListView>
-    </Grid>
-
+            <ItemsControl ItemsSource="{Binding Tableau.Parties}" >
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="Black" BorderThickness="2" Padding="0">
+                        <Grid>
+                                <Grid.InputBindings>
+                                    <MouseBinding
+                                                Command="{Binding DataContext.DemarrerPartieCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                MouseAction="LeftDoubleClick" />
+                                </Grid.InputBindings>
+                                <Rectangle>
+                                    <Rectangle.Style>
+                                        <Style TargetType="Rectangle">
+                                            <Setter Property="Fill" Value="#FFE8E8E8"></Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutPartie.EnAttente}">
+                                                    <Setter Property="Fill" Value="#FF54F74C"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutPartie.EnCours}">
+                                                    <Setter Property="Fill" Value="#FF56D1FF"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutPartie.Terminee}">
+                                                    <Setter Property="Fill" Value="#FFFF3838"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Rectangle.Style>
+                                </Rectangle>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Numero, StringFormat={}N°partie: {0}}"/>
+                                    <TextBlock Text="{Binding Table.Numero, StringFormat={}Table: {0}}"/>
+                                    <TextBlock Text="{Binding Arbitre.Nom, StringFormat={}A: {0}}"/>
+                                    <Button Content="{Binding Joueur1.Nom, StringFormat={}J1: {0}}" 
+                                            Command="{Binding DataContext.ArreterPartieCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" 
+                                            CommandParameter="{Binding Joueur1}">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="IsEnabled" Value="False"></Setter>
+                                                <Setter Property="Visibility" Value="Visible"></Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutPartie.EnCours}">
+                                                        <Setter Property="IsEnabled" Value="True"></Setter>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Joueur1}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Hidden"></Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                    <Button Content="{Binding Joueur2.Nom, StringFormat={}J2: {0}}" 
+                                            Command="{Binding DataContext.ArreterPartieCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" 
+                                            CommandParameter="{Binding Joueur2}">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="IsEnabled" Value="False"></Setter>
+                                                <Setter Property="Visibility" Value="Visible"></Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutPartie.EnCours}">
+                                                        <Setter Property="IsEnabled" Value="True"></Setter>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Joueur2}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Hidden"></Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                       </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="4" Columns="7" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            
+        </StackPanel>
+           
+    </StackPanel>
 </Window>

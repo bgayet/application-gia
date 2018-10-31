@@ -1,6 +1,19 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:bgm="clr-namespace:BGayet.GIA.Models"
-                    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-                    xmlns:data="http://schemas.microsoft.com/netfx/2009/xaml/presentation">
+                    xmlns:local="clr-namespace:BGayet.GIA.Views">
+
+    <DataTemplate x:Key="HeaderLstArbitresTemplate">
+        <TextBlock Text="{Binding Name,StringFormat={}Liste des arbitres n°{0}}" FontWeight="Bold" Foreground="Gray" FontSize="22" VerticalAlignment="Bottom" />
+    </DataTemplate>
+    <DataTemplate x:Key="HeaderClassementJoueursTemplate">
+        <Border Background="#FFFBFBFB">
+            <TextBlock FontSize="14" Foreground="Gray" FontWeight="Bold"
+                  TextAlignment="Center" Text="{Binding Path=Name,StringFormat={}Classement {0}}"/>
+            </Border>
+    </DataTemplate>
+
+    <local:MyTemplateSelector x:Key="MyTemplateSelectorObj" 
+             HeaderLstArbitresTemplate="{StaticResource HeaderLstArbitresTemplate}" 
+             HeaderClassementJoueursTemplate="{StaticResource HeaderClassementJoueursTemplate}"/>
+
 </ResourceDictionary>

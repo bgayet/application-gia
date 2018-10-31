@@ -28,7 +28,7 @@ namespace BGayet.GIA.Database
         {
             SQLiteDbMigrator migrator = new SQLiteDbMigrator(DataBasePath);
             migrator.Update();
-            PopulateDatabase();
+            //PopulateDatabase();
         }
 
         /// <summary>

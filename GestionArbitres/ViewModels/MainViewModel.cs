@@ -1,10 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using BGayet.GIA.Models;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Media;
-using System.Windows.Shapes;
 using BGayet.GIA.Services;
 using BGayet.GIA.Utils;
 using System.Linq;
@@ -12,6 +8,7 @@ using System.Collections.Generic;
 using System;
 using System.Data;
 using Microsoft.Win32;
+using GalaSoft.MvvmLight.Command;
 
 namespace BGayet.GIA.ViewModels
 {
@@ -19,23 +16,29 @@ namespace BGayet.GIA.ViewModels
     public class MainViewModel : ViewModelBase
     {
         private readonly IDataService _dataService;
-
-        public ParamTableau _paramTableau;
-        public Tableau Tableau { get; set; }
-        public ParamTableau ParamTableau { get; set; }
-
-        public List<JoueurModel> ListJoueurModel { get; set; } 
-
+        private ParamTableau _paramTableau;
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
-            ListJoueurModel = new List<JoueurModel>();
             _dataService = dataService;
             InitializeTableau(1);
+            DemarrerPartieCommand = new RelayCommand<Partie>(DemarrerPartie);
+            ArreterPartieCommand = new RelayCommand<Joueur>(ArreterPartie);
+
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(Tableau.Joueurs);
+            PropertyGroupDescription groupDescription1 = new PropertyGroupDescription("NumGroupeArbitre");
+            PropertyGroupDescription groupDescription2 = new PropertyGroupDescription("Classement");
+            view.GroupDescriptions.Add(groupDescription1);
+            view.GroupDescriptions.Add(groupDescription2);
         }
+
+        public ParamTableau ParamTableau { get; set; }
+        public Tableau Tableau { get; set; }
+        public RelayCommand<Partie> DemarrerPartieCommand { get; set; }
+        public RelayCommand<Joueur> ArreterPartieCommand { get; set; }
 
         private void InitializeParties()
         {
@@ -44,17 +47,8 @@ namespace BGayet.GIA.ViewModels
                 .Select(param => new Partie()
                 {
                     Numero = param.NumPartie,
-                    NumeroPhase = param.NumPhase,
-                    PartieVainqueur = new Partie() { Numero = param.NumPartieVainqueur },
-                    PartiePerdant = new Partie() { Numero = param.NumPartiePerdant },
                     Statut = StatutPartie.ALancer
                 }).ToList();
-
-            result.ForEach(partie =>
-            {
-                partie.PartieVainqueur = result.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
-                partie.PartiePerdant = result.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
-            });
 
             Tableau.Parties = result;
         }
@@ -99,19 +93,14 @@ namespace BGayet.GIA.ViewModels
                     {
                         Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ1]),
                         Nom = Convert.ToString(row[Constants.FichierEnteteNomJ1]),
-                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ1])
+                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ1]),
+                        Classement = param.ClassementJoueur1.Value,
+                        CompteurArbitre = 0,
+                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur1.Value).NumGroupe
                     };
 
                     if (joueur1.Nom.ToUpper() == Constants.NomJoueurAbsent)
                         joueur1.EstAbsent = true;
-
-                    ListJoueurModel.Add(new JoueurModel()
-                    {
-                        Joueur = joueur1,
-                        CompteurArbitre = 0,
-                        Classement = param.ClassementJoueur1.Value,
-                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur1.Value).NumGroupe
-                    });
 
                     partie.Joueur1 = joueur1;
                     joueurs.Add(joueur1);
@@ -123,19 +112,14 @@ namespace BGayet.GIA.ViewModels
                     {
                         Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ2]),
                         Nom = Convert.ToString(row[Constants.FichierEnteteNomJ2]),
-                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ2])
+                        Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ2]),
+                        Classement = param.ClassementJoueur2.Value,
+                        CompteurArbitre = 0,
+                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur2.Value).NumGroupe
                     };
 
                     if (joueur2.Nom.ToUpper() == Constants.NomJoueurAbsent)
                         joueur2.EstAbsent = true;
-
-                    ListJoueurModel.Add(new JoueurModel()
-                    {
-                        Joueur = joueur2,
-                        CompteurArbitre = 0,
-                        Classement = param.ClassementJoueur2.Value,
-                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur2.Value).NumGroupe
-                    });
 
                     partie.Joueur2 = joueur2;
                     joueurs.Add(joueur2);
@@ -150,39 +134,165 @@ namespace BGayet.GIA.ViewModels
             Tableau = new Tableau();
 
             // Sélection du fichier
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = Constants.FichierExcelFilter;
+            OpenFileDialog openFileDialog = new OpenFileDialog { Filter = Constants.FichierExcelFilter };
             if (openFileDialog.ShowDialog() == false)
                 return;
 
             // Lecture fichier dans Datatable
             DataTable dataTable = ExcelSheetHelper.ReadAsDataTable(openFileDialog.FileName);
-
+            //DataTable dataTable = null;
             // Récupération du paramétrage
             _dataService.GeParamTableauById(id, (item, error) =>
             {
                 //ManageError(error);
                 _paramTableau = item;
             });
-
+            ParamTableau = _paramTableau;
             // Initialisation Parties/Joueurs/Tables
             InitializeParties();
             InitializeJoueurs(dataTable);
             InitializeTables(dataTable);
-            //InitializeListView();
+            InitializeStatutParties();
         }
 
-        private void LancerPartie(Partie partie)
+        private void InitializeStatutParties()
         {
-            partie.Statut = StatutPartie.EnCours;
+            Tableau.Parties.ForEach(partie =>
+            {
+                if (partie.Joueur1 != null && partie.Joueur1.Statut == StatutJoueur.Libre 
+                &&  partie.Joueur2 != null && partie.Joueur2.Statut == StatutJoueur.Libre)
+                {
+                    partie.Joueur1.Statut = StatutJoueur.Occupe;
+                    partie.Joueur2.Statut = StatutJoueur.Occupe;
+                }
+            });
+
+            Tableau.Parties.ForEach(partie =>
+            {
+                if (partie.Joueur1 != null && partie.Joueur1.Statut == StatutJoueur.Occupe
+                && partie.Joueur2 != null && partie.Joueur2.Statut == StatutJoueur.Occupe)
+                {
+                    partie.Arbitre = FindArbitre(partie);
+                    partie.Arbitre.Statut = StatutJoueur.Occupe;
+                    partie.Arbitre.CompteurArbitre += 1;
+                    partie.Table = GetTable();
+                    partie.Table.Statut = StatutTable.Occupe;
+                    partie.Statut = StatutPartie.EnAttente;
+                }
+            });
         }
 
-        private void ArreterPartie(Partie partie)
+        private Joueur FindArbitre(Partie partie)
         {
+            var numGroupeArbitre = _paramTableau.ParamTableauParties
+                .Find(x => x.NumPartie == partie.Numero)
+                .NumGroupeArbitre;
+
+            return Tableau.Joueurs
+                .Where(x => x.NumGroupeArbitre == numGroupeArbitre && x.Statut == StatutJoueur.Libre)
+                .OrderBy(x => x.CompteurArbitre).FirstOrDefault();
+        }
+
+        private Table GetTable()
+        {
+            return Tableau.Tables.Where(x => x.Statut == StatutTable.Libre).FirstOrDefault();
+        }
+
+        private void DemarrerPartie(Partie partie)
+        {
+            if(partie.Statut == StatutPartie.EnAttente)
+                partie.Statut = StatutPartie.EnCours;
+        }
+
+        private void ArreterPartie(Joueur vainqueur)
+        {
+            var partie = Tableau.Parties.Find(x => x.Statut == StatutPartie.EnCours && (x.Joueur1 == vainqueur || x.Joueur2 == vainqueur));
+            Joueur joueurP;
+            if (partie.Joueur1 == vainqueur)
+            {
+                partie.Resultat = ResultatPartie.Joueur1Vainqueur;
+                joueurP = partie.Joueur2;
+            }
+            else
+            {
+                partie.Resultat = ResultatPartie.Joueur2Vainqueur;
+                joueurP = partie.Joueur1;
+            }
+
+            MajListeTableau16(partie);
+
             partie.Statut = StatutPartie.Terminee;
-            //partie.Joueur1.Statut = StatutJoueur.Libre;
-            //partie.Joueur2.Statut = StatutJoueur.Libre;
-            //partie.Arbitre.Statut = StatutJoueur.Libre;
+            partie.Joueur1.Statut = StatutJoueur.Libre;
+            partie.Joueur2.Statut = StatutJoueur.Libre;
+            partie.Arbitre.Statut = StatutJoueur.Libre;
+            partie.Table.Statut = StatutTable.Libre;
+
+            var paramPartie = _paramTableau.ParamTableauParties.Find(x => x.NumPartie == partie.Numero);
+            var partieV = Tableau.Parties.FirstOrDefault(x => x.Numero == paramPartie.NumPartieVainqueur);
+            var partieP = Tableau.Parties.FirstOrDefault(x => x.Numero == paramPartie.NumPartiePerdant);
+
+            if (partieV != null)
+            {
+                if (partieV.Joueur1 == null)
+                    partieV.Joueur1 = vainqueur;
+                else
+                    partieV.Joueur2 = vainqueur;
+            }
+
+            if (partieP != null)
+            { 
+                if (partieP.Joueur1 == null)
+                    partieP.Joueur1 = joueurP;
+                else
+                    partieP.Joueur2 = joueurP;
+            }
+
+            var numPhase = _paramTableau.ParamTableauParties.Find(x => x.NumPartie == partie.Numero).NumPhase;
+            var numPartieLst = _paramTableau.ParamTableauParties.Where(x => x.NumPhase == numPhase + 1).Select(x => x.NumPartie);
+
+            foreach(var p in Tableau.Parties.Where(p => numPartieLst.Contains(p.Numero) && p.Statut == StatutPartie.ALancer)) 
+            {
+                if (p.Joueur1 != null && p.Joueur1.Statut == StatutJoueur.Libre
+                 && p.Joueur2 != null && p.Joueur2.Statut == StatutJoueur.Libre
+                 && FindArbitre(p) != null && GetTable() != null)
+                {
+                    p.Joueur1.Statut = StatutJoueur.Occupe;
+                    p.Joueur2.Statut = StatutJoueur.Occupe;
+                    p.Arbitre = FindArbitre(p);
+                    p.Arbitre.Statut = StatutJoueur.Occupe;
+                    p.Arbitre.CompteurArbitre += 1;
+                    p.Table = GetTable();
+                    p.Table.Statut = StatutTable.Occupe;
+                    p.Statut = StatutPartie.EnAttente;
+                }
+            }
+        }
+
+        private void MajListeTableau16(Partie partie)
+        {
+            if (new List<int>() { 1, 2, 3, 4 }.Contains(partie.Numero))
+            {
+                Joueur v;
+                Joueur p;
+                if (partie.Resultat == ResultatPartie.Joueur1Vainqueur)
+                {
+                    v = partie.Joueur1;
+                    p = partie.Joueur2;
+                }
+                else
+                {
+                    v = partie.Joueur2;
+                    p = partie.Joueur1;
+                }
+
+                v.Classement = 2;
+                v.NumGroupeArbitre = 2;
+                p.Classement = 3;
+                p.NumGroupeArbitre = 1;
+
+                CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(Tableau.Joueurs);
+                view.Refresh();
+            }
         }
 
         private void ManageError(Exception error)
@@ -190,86 +300,5 @@ namespace BGayet.GIA.ViewModels
             throw new NotImplementedException();
         }
 
-        private void InitializeAutre()
-        { 
-
-
-            int index = 0;
-            for (int i = 1; i < 5; i++)
-            {
-                for (int j = 1; j < 8; j++)
-                {
-                    
-                    Rectangle rect = new Rectangle();
-
-                    Setter set = new Setter(Shape.FillProperty, Brushes.Beige);
-
-                    Binding bindingTagProperty = new Binding(string.Format("Parties[{0}]", index));
-                    rect.SetBinding(FrameworkElement.TagProperty, bindingTagProperty);
-
-
-                    Style style = new Style(typeof(Rectangle));
-                    DataTrigger etatTrigger = new DataTrigger()
-                    {
-                        Binding = new Binding(string.Format("Parties[{0}].Statut", index)),
-                        Value = StatutPartie.EnCours
-                    };
-
-                    DataTrigger etatTrigger1 = new DataTrigger()
-                    {
-                        Binding = new Binding(string.Format("Parties[{0}].Statut", index)),
-                        Value = StatutPartie.Terminee
-                    };
-
-                    etatTrigger.Setters.Add(new Setter(Shape.FillProperty, Brushes.Blue));
-                    //etatTrigger.Setters.Add(new Setter(Shape.ForegroundProperty, new SolidColorBrush(Colors.Green)));
-                    etatTrigger1.Setters.Add(new Setter(Shape.FillProperty, Brushes.Red));
-
-                    style.Setters.Add(set);
-                    style.Triggers.Add(etatTrigger);
-                    style.Triggers.Add(etatTrigger1);
-                    rect.Style = style;
-
-                    Border border = new Border();
-                    border.Child = rect;
-                    Grid.SetRow(border, i);
-                    Grid.SetColumn(border, j);
-
-
-                    //GridTableaux.Children.Add(border);
-
-
-                    //Button button = new Button();
-
-                    //button.Click += MakeButton;
-                    //button.Content = rencontre.Numero;
-
-                    //Binding bindingTagProperty = new Binding(string.Format("Rencontres[{0}]", index));
-                    //button.SetBinding(TagProperty, bindingTagProperty);
-
-                    //Binding bindingIsEnabledProperty = new Binding(string.Format("Rencontres[{0}].Etat", index));
-                    //button.SetBinding(IsEnabledProperty, bindingIsEnabledProperty);
-
-                    //Style style = new Style(typeof(Button));
-                    //DataTrigger etatTrigger = new DataTrigger()
-                    //{
-                    //    Binding = new Binding(string.Format("Rencontres[{0}].Etat", index)),
-                    //    Value = Rencontre.EtatEnum.EnCours
-                    //};
-
-                    //etatTrigger.Setters.Add(new Setter(BorderBrushProperty, new SolidColorBrush(System.Windows.Media.Colors.Green)));
-
-                    //style.Triggers.Add(etatTrigger);
-                    //button.Style = style;
-
-                    //border.Child = button;
-                    //Grid.SetRow(border, i);
-                    //Grid.SetColumn(border, j);
-                    //GridTableaux.Children.Add(border);
-
-                    index++;
-                }
-            }
-        }
     }
 }

@@ -28,41 +28,41 @@ namespace BGayet.GIA.Services
 
         public void GeTableauById(Action<Tableau, Exception> callback, int id)
         {
-            Tableau result = new Tableau();
-            List<Partie> parties;
+            //Tableau result = new Tableau();
+            //List<Partie> parties;
 
-            try
-            {
-                using (var db = new SQLiteConnection(SQLiteDatabase.DataBasePath))
-                {
+            //try
+            //{
+            //    using (var db = new SQLiteConnection(SQLiteDatabase.DataBasePath))
+            //    {
 
-                    parties = db.GetWithChildren<ParamTableau>(id)
-                        .ParamTableauParties
-                        .OrderBy(x => x.Position)
-                        .Select(param => new Partie()
-                        {
-                            Numero = param.NumPartie,
-                            NumeroPhase = param.NumPhase,
-                            PartieVainqueur = new Partie() { Numero = param.NumPartieVainqueur },
-                            PartiePerdant = new Partie() { Numero = param.NumPartiePerdant },
-                            Statut = StatutPartie.ALancer
-                        }).ToList();
+            //        parties = db.GetWithChildren<ParamTableau>(id)
+            //            .ParamTableauParties
+            //            .OrderBy(x => x.Position)
+            //            .Select(param => new Partie()
+            //            {
+            //                Numero = param.NumPartie,
+            //                NumeroPhase = param.NumPhase,
+            //                PartieVainqueur = new Partie() { Numero = param.NumPartieVainqueur },
+            //                PartiePerdant = new Partie() { Numero = param.NumPartiePerdant },
+            //                Statut = StatutPartie.ALancer
+            //            }).ToList();
 
-                    parties.ForEach(partie =>
-                    {
-                        partie.PartieVainqueur = parties.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
-                        partie.PartiePerdant = parties.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
-                    });
-                }
+            //        parties.ForEach(partie =>
+            //        {
+            //            partie.PartieVainqueur = parties.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
+            //            partie.PartiePerdant = parties.Find(x => x.Numero == partie.PartieVainqueur?.Numero);
+            //        });
+            //    }
 
-                result.Parties = parties;
-            }
-            catch (Exception ex)
-            {
-                callback(null, ex);
-            }
+            //    result.Parties = parties;
+            //}
+            //catch (Exception ex)
+            //{
+            //    callback(null, ex);
+            //}
 
-            callback(result, null);
+            //callback(result, null);
         }
 
     }
