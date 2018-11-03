@@ -33,6 +33,8 @@ namespace BGayet.GIA.Models
             set => Set(ref _compteurArbitre, value);
         }
 
+        public bool PeutArbitrer => Statut == StatutJoueur.Libre && !EstAbsent;
+
         public string Numero { get; set; }
         public string Nom { get; set; }
         public string Prenom { get; set; }

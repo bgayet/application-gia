@@ -4,11 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:model="clr-namespace:BGayet.GIA.Models"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
         Height="560"
         Width="1130"
-        ResizeMode="NoResize"
         Title="GIA - Gestion Informatisée des Arbitres"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 
@@ -19,7 +19,8 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    
+
+
     <StackPanel Orientation="Vertical">
         <Menu x:Name="menu">
             <MenuItem Header="Fichier" Height="21" >
@@ -37,10 +38,11 @@
                 </MenuItem>
             </MenuItem>
         </Menu>
+        
         <StackPanel Orientation="Horizontal" Background="#FF181818">
             <StackPanel Orientation="Vertical">
                 <Grid Height="500">
-                    <ListView Name="lvInscrits" ItemsSource="{Binding Tableau.Joueurs}">
+                    <ListView Name="lvInscrits" ItemsSource="{Binding Source={StaticResource cvsListeInscrits}}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Numero" Width="60" DisplayMemberBinding="{Binding Numero}" />
@@ -70,7 +72,7 @@
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutJoueur.Occupe}">
-                                        <Setter Property="Background" Value="Beige" />
+                                        <Setter Property="Background" Value="#FFF5F5A4" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

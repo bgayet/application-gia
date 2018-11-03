@@ -28,7 +28,7 @@ namespace BGayet.GIA.Database
         {
             SQLiteDbMigrator migrator = new SQLiteDbMigrator(DataBasePath);
             migrator.Update();
-            //PopulateDatabase();
+            PopulateDatabase();
         }
 
         /// <summary>
@@ -85,7 +85,9 @@ namespace BGayet.GIA.Database
                     currentVersion = Convert.ToInt32(currentVersionStr);
                 }
 
-                // V0 -> V1
+                //------------------------------
+                // -----     V0 -> V1      -----       
+                //------------------------------
                 if (currentVersion == 0 &&
                     targetVersion > currentVersion)
                 {
@@ -94,14 +96,14 @@ namespace BGayet.GIA.Database
                     // l'ORM sqlite-net ne gère pas la création des clés étrangères
                     string queryCreateParamTableauParties =
                         @"CREATE TABLE [PARAM_TABLEAU_PARTIES] (
-                                  [Id] INTEGER  NOT NULL
-                                , [IdParamTableau] bigint  NULL
-                                , [NumPartie] bigint  NULL
-                                , [NumPhase] bigint  NULL
-                                , [NumGroupeArbitre] bigint  NULL
-                                , [NumPartieVainqueur] bigint  NULL
-                                , [NumPartiePerdant] bigint  NULL
-                                , [Position] bigint  NULL
+                                  [Id] INTEGER NOT NULL
+                                , [IdParamTableau] INTEGER NOT NULL
+                                , [NumPartie] INTEGER NOT NULL
+                                , [NumPhase] INTEGER NOT NULL
+                                , [NumGroupeArbitre] INTEGER NOT NULL
+                                , [NumPartieVainqueur] INTEGER NULL
+                                , [NumPartiePerdant] INTEGER NULL
+                                , [Position] INTEGER NOT NULL
                                 , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
                                 , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_PARTIES] PRIMARY KEY ([Id]));
                             CREATE INDEX [PARAM_TABLEAU_PARTIES_IdParamTableau] ON [PARAM_TABLEAU_PARTIES] ([IdParamTableau] ASC);";
@@ -110,12 +112,12 @@ namespace BGayet.GIA.Database
 
                     string queryCreateParamTableauJoueurs =
                         @"CREATE TABLE [PARAM_TABLEAU_JOUEURS] (
-                                  [Id] INTEGER  NOT NULL
-                                , [IdParamTableau] bigint  NULL
-                                , [NumLigneFichier] bigint  NULL
-                                , [NumPartieTableau] bigint  NULL
-                                , [ClassementJoueur1] bigint  NULL
-                                , [ClassementJoueur2] bigint  NULL
+                                  [Id] INTEGER NOT NULL
+                                , [IdParamTableau] INTEGER NOT NULL
+                                , [NumLigneFichier] INTEGER NOT NULL
+                                , [NumPartieTableau] INTEGER NOT NULL
+                                , [ClassementJoueur1] INTEGER NULL
+                                , [ClassementJoueur2] INTEGER NULL
                                 , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
                                 , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_JOUEURS] PRIMARY KEY ([Id]));
                             CREATE INDEX [PARAM_TABLEAU_JOUEURS_IdParamTableau] ON [PARAM_TABLEAU_JOUEURS] ([IdParamTableau] ASC);";
@@ -124,11 +126,11 @@ namespace BGayet.GIA.Database
 
                     string queryCreateParamTableauListes =
                             @"CREATE TABLE [PARAM_TABLEAU_GROUPES] (
-                                  [Id] INTEGER  NOT NULL
-                                , [IdParamTableau] bigint  NULL
-                                , [NumGroupe] bigint  NULL
-                                , [ClassementJoueurs] bigint  NULL
-                                , [NombreJoueurs] bigint  NULL
+                                  [Id] INTEGER NOT NULL
+                                , [IdParamTableau] INTEGER NOT NULL
+                                , [NumGroupe] INTEGER NOT NULL
+                                , [ClassementJoueurs] INTEGER NULL
+                                , [NombreJoueurs] INTEGER NULL
                                 , FOREIGN KEY(IdParamTableau) REFERENCES PARAM_TABLEAU(Id)
                                 , CONSTRAINT [sqlite_master_PK_PARAM_TABLEAU_GROUPES] PRIMARY KEY ([Id]));
                             CREATE INDEX [PARAM_TABLEAU_GROUPES_IdParamTableau] ON [PARAM_TABLEAU_GROUPES] ([IdParamTableau] ASC);";

@@ -19,6 +19,7 @@ namespace BGayet.GIA.Models
         [OneToMany]
         public List<ParamTableauGroupes> ParamTableauGroupes { get; set; }
 
+        [MaxLength(80), NotNull]
         public string Libelle { get; set; }
         public int Hauteur { get; set; }
         public int Largeur { get; set; }

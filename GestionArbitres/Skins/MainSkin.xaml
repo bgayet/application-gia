@@ -1,6 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:BGayet.GIA.Views">
+                    xmlns:local="clr-namespace:BGayet.GIA.Views"
+                    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+                    xmlns:dat="http://schemas.microsoft.com/netfx/2009/xaml/presentation">
 
     <DataTemplate x:Key="HeaderLstArbitresTemplate">
         <TextBlock Text="{Binding Name,StringFormat={}Liste des arbitres n°{0}}" FontWeight="Bold" Foreground="Gray" FontSize="22" VerticalAlignment="Bottom" />
@@ -15,5 +17,18 @@
     <local:MyTemplateSelector x:Key="MyTemplateSelectorObj" 
              HeaderLstArbitresTemplate="{StaticResource HeaderLstArbitresTemplate}" 
              HeaderClassementJoueursTemplate="{StaticResource HeaderClassementJoueursTemplate}"/>
+
+
+
+    <CollectionViewSource x:Key="cvsListeInscrits" Source="{Binding Path=Tableau.Joueurs}">
+        <CollectionViewSource.SortDescriptions>
+            <scm:SortDescription PropertyName="NumGroupeArbitre"/>
+            <scm:SortDescription PropertyName="Classement"/>
+        </CollectionViewSource.SortDescriptions>
+        <CollectionViewSource.GroupDescriptions>
+            <dat:PropertyGroupDescription PropertyName="NumGroupeArbitre"/>
+            <dat:PropertyGroupDescription PropertyName="Classement"/>
+        </CollectionViewSource.GroupDescriptions>
+    </CollectionViewSource>
 
 </ResourceDictionary>

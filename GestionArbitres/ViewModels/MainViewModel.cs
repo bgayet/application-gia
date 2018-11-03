@@ -9,6 +9,11 @@ using System;
 using System.Data;
 using Microsoft.Win32;
 using GalaSoft.MvvmLight.Command;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System.IO;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace BGayet.GIA.ViewModels
 {
@@ -27,16 +32,11 @@ namespace BGayet.GIA.ViewModels
             InitializeTableau(1);
             DemarrerPartieCommand = new RelayCommand<Partie>(DemarrerPartie);
             ArreterPartieCommand = new RelayCommand<Joueur>(ArreterPartie);
-
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(Tableau.Joueurs);
-            PropertyGroupDescription groupDescription1 = new PropertyGroupDescription("NumGroupeArbitre");
-            PropertyGroupDescription groupDescription2 = new PropertyGroupDescription("Classement");
-            view.GroupDescriptions.Add(groupDescription1);
-            view.GroupDescriptions.Add(groupDescription2);
         }
 
         public ParamTableau ParamTableau { get; set; }
         public Tableau Tableau { get; set; }
+
         public RelayCommand<Partie> DemarrerPartieCommand { get; set; }
         public RelayCommand<Joueur> ArreterPartieCommand { get; set; }
 
@@ -80,7 +80,7 @@ namespace BGayet.GIA.ViewModels
 
         private void InitializeJoueurs(DataTable dt)
         {
-            var joueurs = new List<Joueur>();
+            var joueurs = new ObservableCollection<Joueur>();
 
             foreach (var param in _paramTableau.ParamTableauJoueurs)
             {
@@ -175,7 +175,7 @@ namespace BGayet.GIA.ViewModels
                     partie.Arbitre = FindArbitre(partie);
                     partie.Arbitre.Statut = StatutJoueur.Occupe;
                     partie.Arbitre.CompteurArbitre += 1;
-                    partie.Table = GetTable();
+                    partie.Table = FindTable();
                     partie.Table.Statut = StatutTable.Occupe;
                     partie.Statut = StatutPartie.EnAttente;
                 }
@@ -184,18 +184,36 @@ namespace BGayet.GIA.ViewModels
 
         private Joueur FindArbitre(Partie partie)
         {
-            var numGroupeArbitre = _paramTableau.ParamTableauParties
-                .Find(x => x.NumPartie == partie.Numero)
-                .NumGroupeArbitre;
+            var paramPartie = _paramTableau.ParamTableauParties
+                .Find(param => param.NumPartie == partie.Numero);
 
-            return Tableau.Joueurs
-                .Where(x => x.NumGroupeArbitre == numGroupeArbitre && x.Statut == StatutJoueur.Libre)
-                .OrderBy(x => x.CompteurArbitre).FirstOrDefault();
+            var joueursPrioritaires = _paramTableau.ParamTableauParties
+                .Where(param => param.NumPhase == paramPartie.NumPhase + 1)
+                .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
+                .Where(p =>
+                {
+                    return p.Statut == StatutPartie.ALancer &&
+                    p.Joueur1 != null && p.Joueur2 != null &&
+                    (p.Joueur1.Statut == StatutJoueur.Occupe || p.Joueur1.EstAbsent || p.Joueur1.EstForfait || p.Joueur2.Statut == StatutJoueur.Occupe || p.Joueur2.EstAbsent || p.Joueur2.EstForfait) &&
+                    (p.Joueur1.PeutArbitrer || p.Joueur2.PeutArbitrer);
+                })
+                .Select(p => p.Joueur1.PeutArbitrer ? p.Joueur1 : p.Joueur2)
+                .OrderBy(j => j.CompteurArbitre);
+
+            if (joueursPrioritaires.Count() > 0)
+                return joueursPrioritaires.First();
+            else
+                return Tableau.Joueurs
+                    .Where(joueur =>  joueur.NumGroupeArbitre == paramPartie.NumGroupeArbitre && joueur.PeutArbitrer)
+                    .OrderBy(joueur => joueur.CompteurArbitre)
+                    .FirstOrDefault();
         }
 
-        private Table GetTable()
+        private Table FindTable()
         {
-            return Tableau.Tables.Where(x => x.Statut == StatutTable.Libre).FirstOrDefault();
+            return Tableau.Tables
+                .Where(table => table.Statut == StatutTable.Libre)
+                .FirstOrDefault();
         }
 
         private void DemarrerPartie(Partie partie)
@@ -254,14 +272,14 @@ namespace BGayet.GIA.ViewModels
             {
                 if (p.Joueur1 != null && p.Joueur1.Statut == StatutJoueur.Libre
                  && p.Joueur2 != null && p.Joueur2.Statut == StatutJoueur.Libre
-                 && FindArbitre(p) != null && GetTable() != null)
+                 && FindArbitre(p) != null && FindTable() != null)
                 {
                     p.Joueur1.Statut = StatutJoueur.Occupe;
                     p.Joueur2.Statut = StatutJoueur.Occupe;
                     p.Arbitre = FindArbitre(p);
                     p.Arbitre.Statut = StatutJoueur.Occupe;
                     p.Arbitre.CompteurArbitre += 1;
-                    p.Table = GetTable();
+                    p.Table = FindTable();
                     p.Table.Statut = StatutTable.Occupe;
                     p.Statut = StatutPartie.EnAttente;
                 }
@@ -285,19 +303,18 @@ namespace BGayet.GIA.ViewModels
                     p = partie.Joueur1;
                 }
 
+                //  Remove and Re-Add - permet de rafraichir la vue
+                Tableau.Joueurs.Remove(v);
+                Tableau.Joueurs.Remove(p);
+
                 v.Classement = 2;
                 v.NumGroupeArbitre = 2;
                 p.Classement = 3;
                 p.NumGroupeArbitre = 1;
 
-                CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(Tableau.Joueurs);
-                view.Refresh();
+                Tableau.Joueurs.Add(v);
+                Tableau.Joueurs.Add(p);
             }
-        }
-
-        private void ManageError(Exception error)
-        {
-            throw new NotImplementedException();
         }
 
     }

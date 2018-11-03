@@ -11,7 +11,5 @@
         public const string FichierEntetePrenomJ2 = "Prenom2";
         public const string FichierEnteteNumTable = "N° Table";
         public const string FichierExcelFilter = "Fichiers Excel|*.xlsx";
-        public const string ListViewFormatLibelle = "lv_{0}";
-        public const string PropertyGroupeClassement = "Groupe.Classement";
     }
 }
