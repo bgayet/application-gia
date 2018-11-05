@@ -5,9 +5,10 @@ namespace BGayet.GIA.Models
     public class Joueur: ObservableObject
     {
         private int _compteurArbitre;
-        private StatutJoueur _statut;
         private bool _estForfait;
         private bool _estAbsent;
+        private Partie _partie;
+        private StatutJoueur _statut;
 
         public bool EstAbsent
         {
@@ -33,13 +34,22 @@ namespace BGayet.GIA.Models
             set => Set(ref _compteurArbitre, value);
         }
 
+        public Partie Partie
+        {
+            get => _partie;
+            set
+            {
+                Set(ref _partie, value);
+            }
+        }
+
         public bool PeutArbitrer => Statut == StatutJoueur.Libre && !EstAbsent;
+        public bool EstArbitre => Partie?.Arbitre == this;
 
         public string Numero { get; set; }
         public string Nom { get; set; }
         public string Prenom { get; set; }
-        public int Classement { get; set; }
-        public int NumGroupeArbitre { get; set; }
+        public Groupe Groupe { get; set; }
     }
 
     public enum StatutJoueur
@@ -47,4 +57,5 @@ namespace BGayet.GIA.Models
         Libre = 0,
         Occupe = 1
     }
+
 }

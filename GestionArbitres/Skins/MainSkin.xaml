@@ -8,7 +8,7 @@
         <TextBlock Text="{Binding Name,StringFormat={}Liste des arbitres n°{0}}" FontWeight="Bold" Foreground="Gray" FontSize="22" VerticalAlignment="Bottom" />
     </DataTemplate>
     <DataTemplate x:Key="HeaderClassementJoueursTemplate">
-        <Border Background="#FFFBFBFB">
+        <Border Background="#FFECECEC">
             <TextBlock FontSize="14" Foreground="Gray" FontWeight="Bold"
                   TextAlignment="Center" Text="{Binding Path=Name,StringFormat={}Classement {0}}"/>
             </Border>
@@ -22,12 +22,12 @@
 
     <CollectionViewSource x:Key="cvsListeInscrits" Source="{Binding Path=Tableau.Joueurs}">
         <CollectionViewSource.SortDescriptions>
-            <scm:SortDescription PropertyName="NumGroupeArbitre"/>
-            <scm:SortDescription PropertyName="Classement"/>
+            <scm:SortDescription PropertyName="Groupe.Numero"/>
+            <scm:SortDescription PropertyName="Groupe.Classement"/>
         </CollectionViewSource.SortDescriptions>
         <CollectionViewSource.GroupDescriptions>
-            <dat:PropertyGroupDescription PropertyName="NumGroupeArbitre"/>
-            <dat:PropertyGroupDescription PropertyName="Classement"/>
+            <dat:PropertyGroupDescription PropertyName="Groupe.Numero"/>
+            <dat:PropertyGroupDescription PropertyName="Groupe.Classement"/>
         </CollectionViewSource.GroupDescriptions>
     </CollectionViewSource>
 

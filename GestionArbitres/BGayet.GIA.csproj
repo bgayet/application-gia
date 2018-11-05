@@ -127,6 +127,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="00-DataBase\SQLiteDatabase.cs" />
+    <Compile Include="Models\Groupe.cs" />
     <Compile Include="Models\Setting\ParamTableau.cs" />
     <Compile Include="Models\Setting\ParamTableauJoueurs.cs" />
     <Compile Include="Models\Setting\ParamTableauGroupes.cs" />
@@ -203,6 +204,7 @@
     <Content Include="00-DataBase\data.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Images\a-icon.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

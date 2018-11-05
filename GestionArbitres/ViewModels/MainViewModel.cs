@@ -32,6 +32,7 @@ namespace BGayet.GIA.ViewModels
             InitializeTableau(1);
             DemarrerPartieCommand = new RelayCommand<Partie>(DemarrerPartie);
             ArreterPartieCommand = new RelayCommand<Joueur>(ArreterPartie);
+            ChangerArbitreCommand = new RelayCommand<Partie>(ChangerArbitre);
         }
 
         public ParamTableau ParamTableau { get; set; }
@@ -39,6 +40,7 @@ namespace BGayet.GIA.ViewModels
 
         public RelayCommand<Partie> DemarrerPartieCommand { get; set; }
         public RelayCommand<Joueur> ArreterPartieCommand { get; set; }
+        public RelayCommand<Partie> ChangerArbitreCommand { get; set; }
 
         private void InitializeParties()
         {
@@ -94,9 +96,8 @@ namespace BGayet.GIA.ViewModels
                         Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ1]),
                         Nom = Convert.ToString(row[Constants.FichierEnteteNomJ1]),
                         Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ1]),
-                        Classement = param.ClassementJoueur1.Value,
-                        CompteurArbitre = 0,
-                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur1.Value).NumGroupe
+                        Groupe = new Groupe() { Classement = param.ClassementJoueur1.Value, Numero = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur1.Value).NumGroupe },
+                        CompteurArbitre = 0
                     };
 
                     if (joueur1.Nom.ToUpper() == Constants.NomJoueurAbsent)
@@ -113,9 +114,8 @@ namespace BGayet.GIA.ViewModels
                         Numero = Convert.ToString(row[Constants.FichierEnteteDossardJ2]),
                         Nom = Convert.ToString(row[Constants.FichierEnteteNomJ2]),
                         Prenom = Convert.ToString(row[Constants.FichierEntetePrenomJ2]),
-                        Classement = param.ClassementJoueur2.Value,
-                        CompteurArbitre = 0,
-                        NumGroupeArbitre = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur2.Value).NumGroupe
+                        Groupe = new Groupe() { Classement = param.ClassementJoueur2.Value, Numero = _paramTableau.ParamTableauGroupes.FirstOrDefault(x => x.ClassementJoueurs == param.ClassementJoueur2.Value).NumGroupe },
+                        CompteurArbitre = 0
                     };
 
                     if (joueur2.Nom.ToUpper() == Constants.NomJoueurAbsent)
@@ -187,27 +187,71 @@ namespace BGayet.GIA.ViewModels
             var paramPartie = _paramTableau.ParamTableauParties
                 .Find(param => param.NumPartie == partie.Numero);
 
-            var joueursPrioritaires = _paramTableau.ParamTableauParties
-                .Where(param => param.NumPhase == paramPartie.NumPhase + 1)
-                .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
-                .Where(p =>
-                {
-                    return p.Statut == StatutPartie.ALancer &&
-                    p.Joueur1 != null && p.Joueur2 != null &&
-                    (p.Joueur1.Statut == StatutJoueur.Occupe || p.Joueur1.EstAbsent || p.Joueur1.EstForfait || p.Joueur2.Statut == StatutJoueur.Occupe || p.Joueur2.EstAbsent || p.Joueur2.EstForfait) &&
-                    (p.Joueur1.PeutArbitrer || p.Joueur2.PeutArbitrer);
-                })
-                .Select(p => p.Joueur1.PeutArbitrer ? p.Joueur1 : p.Joueur2)
-                .OrderBy(j => j.CompteurArbitre);
+            if (paramPartie.NumPhase >= 3)
+            {
 
-            if (joueursPrioritaires.Count() > 0)
-                return joueursPrioritaires.First();
-            else
-                return Tableau.Joueurs
-                    .Where(joueur =>  joueur.NumGroupeArbitre == paramPartie.NumGroupeArbitre && joueur.PeutArbitrer)
+                var joueursPrioritaires = _paramTableau.ParamTableauParties
+                    .Where(param => param.NumPhase == paramPartie.NumPhase + 1 && param.NumPartie != 25)
+                    .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
+                    .Where(p =>
+                    {
+                        return p.Statut == StatutPartie.ALancer &&
+                        p.Joueur1 != null && p.Joueur2 != null &&
+                        (p.Joueur1.Statut == StatutJoueur.Occupe || p.Joueur1.EstAbsent || p.Joueur1.EstForfait || p.Joueur2.Statut == StatutJoueur.Occupe || p.Joueur2.EstAbsent || p.Joueur2.EstForfait) &&
+                        (p.Joueur1.PeutArbitrer || p.Joueur2.PeutArbitrer);
+                    })
+                    .Select(p => p.Joueur1.PeutArbitrer ? p.Joueur1 : p.Joueur2)
+                    .OrderBy(j => j.CompteurArbitre);
+
+                if (joueursPrioritaires.Count() > 0)
+                    return joueursPrioritaires.First();
+
+                var joueursPrioritaires1 = _paramTableau.ParamTableauParties
+                    .Where(param => param.NumPhase == paramPartie.NumPhase + 1 && param.NumPartie != 25)
+                    .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
+                    .Where(p =>
+                    {
+                        return p.Statut == StatutPartie.ALancer &&
+                        ((p.Joueur1 != null && p.Joueur1.PeutArbitrer && p.Joueur2 == null) || (p.Joueur2 != null && p.Joueur2.PeutArbitrer && p.Joueur1 == null));
+                    })
+                    .Select(p => p.Joueur1 != null ? p.Joueur1 : p.Joueur2)
+                    .OrderBy(j => j.CompteurArbitre)
+                    .ThenBy(joueur => joueur.Groupe.Classement);
+
+
+                if (joueursPrioritaires1.Count() > 0)
+                    return joueursPrioritaires1.First();
+            }
+
+            List<Joueur> joueursExclusion = new List<Joueur>();
+
+            if (paramPartie.NumPhase == 6)
+            {
+                var partieFinale = Tableau.Parties.Find(x => x.Numero == 25);
+                joueursExclusion.Add(partieFinale.Joueur1);
+                joueursExclusion.Add(partieFinale.Joueur2);
+            }
+
+            if (paramPartie.NumPhase == 7)
+            {
+                _paramTableau.ParamTableauParties
+                    .Where(param => param.NumPhase == 6)
+                    .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
+                    .Where(p => p.Statut == StatutPartie.ALancer).ToList()
+                    .ForEach(p =>
+                    {
+                        if (p.Joueur1 != null) joueursExclusion.Add(p.Joueur1);
+                        if (p.Joueur2 != null) joueursExclusion.Add(p.Joueur2);
+                    });
+            }
+
+            return Tableau.Joueurs
+                    .Where(joueur =>  joueur.Groupe.Numero == paramPartie.NumGroupeArbitre && joueur.PeutArbitrer && !joueursExclusion.Contains(joueur))
                     .OrderBy(joueur => joueur.CompteurArbitre)
+                    .ThenBy(joueur => joueur.Groupe.Classement)
                     .FirstOrDefault();
         }
+
 
         private Table FindTable()
         {
@@ -220,6 +264,11 @@ namespace BGayet.GIA.ViewModels
         {
             if(partie.Statut == StatutPartie.EnAttente)
                 partie.Statut = StatutPartie.EnCours;
+        }
+
+        private void ChangerArbitre(Partie partie)
+        {
+            partie.Arbitre = new Joueur() { Nom = "Autre" };
         }
 
         private void ArreterPartie(Joueur vainqueur)
@@ -243,6 +292,7 @@ namespace BGayet.GIA.ViewModels
             partie.Joueur1.Statut = StatutJoueur.Libre;
             partie.Joueur2.Statut = StatutJoueur.Libre;
             partie.Arbitre.Statut = StatutJoueur.Libre;
+            partie.Arbitre.Partie = null;
             partie.Table.Statut = StatutTable.Libre;
 
             var paramPartie = _paramTableau.ParamTableauParties.Find(x => x.NumPartie == partie.Numero);
@@ -272,18 +322,43 @@ namespace BGayet.GIA.ViewModels
             {
                 if (p.Joueur1 != null && p.Joueur1.Statut == StatutJoueur.Libre
                  && p.Joueur2 != null && p.Joueur2.Statut == StatutJoueur.Libre
-                 && FindArbitre(p) != null && FindTable() != null)
+                 && FindTable() != null)
                 {
                     p.Joueur1.Statut = StatutJoueur.Occupe;
                     p.Joueur2.Statut = StatutJoueur.Occupe;
-                    p.Arbitre = FindArbitre(p);
-                    p.Arbitre.Statut = StatutJoueur.Occupe;
-                    p.Arbitre.CompteurArbitre += 1;
                     p.Table = FindTable();
                     p.Table.Statut = StatutTable.Occupe;
-                    p.Statut = StatutPartie.EnAttente;
+
+                    var arbitre = FindArbitre(p);
+                    if (arbitre != null)
+                    {
+                        p.Arbitre = arbitre;
+                        p.Arbitre.Statut = StatutJoueur.Occupe;
+                        p.Arbitre.CompteurArbitre += 1;
+                        p.Statut = StatutPartie.EnAttente;
+                    }
+                    else
+                    {
+                        p.Statut = StatutPartie.EnAttenteArbitre;
+                    }
                 }
             }
+        }
+
+        private bool CheckPartie(Partie partie)
+        {
+            if (CheckJoueur(partie?.Joueur1) && 
+                CheckJoueur(partie?.Joueur2) &&
+                FindArbitre(partie) != null && FindTable() != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool CheckJoueur(Joueur joueur)
+        {
+            return joueur != null && joueur.Statut != StatutJoueur.Occupe;
         }
 
         private void MajListeTableau16(Partie partie)
@@ -307,10 +382,10 @@ namespace BGayet.GIA.ViewModels
                 Tableau.Joueurs.Remove(v);
                 Tableau.Joueurs.Remove(p);
 
-                v.Classement = 2;
-                v.NumGroupeArbitre = 2;
-                p.Classement = 3;
-                p.NumGroupeArbitre = 1;
+                v.Groupe.Classement = 2;
+                v.Groupe.Numero = 1;
+                p.Groupe.Classement = 3;
+                p.Groupe.Numero = 2;
 
                 Tableau.Joueurs.Add(v);
                 Tableau.Joueurs.Add(p);
