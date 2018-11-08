@@ -1,6 +1,5 @@
 ﻿using GalaSoft.MvvmLight;
 using BGayet.GIA.Models;
-using System.Windows.Data;
 using BGayet.GIA.Services;
 using BGayet.GIA.Utils;
 using System.Linq;
@@ -9,10 +8,6 @@ using System;
 using System.Data;
 using Microsoft.Win32;
 using GalaSoft.MvvmLight.Command;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using System.IO;
-using System.ComponentModel;
 using System.Collections.ObjectModel;
 
 namespace BGayet.GIA.ViewModels
@@ -29,18 +24,25 @@ namespace BGayet.GIA.ViewModels
         public MainViewModel(IDataService dataService)
         {
             _dataService = dataService;
-            InitializeTableau(1);
+            _dataService.GetAllParamTableaux((item, error) =>
+            {
+                ParamTableaux = item;
+            });
+
+            //InitializeTableau(1);
             DemarrerPartieCommand = new RelayCommand<Partie>(DemarrerPartie);
             ArreterPartieCommand = new RelayCommand<Joueur>(ArreterPartie);
             ChangerArbitreCommand = new RelayCommand<Partie>(ChangerArbitre);
+            InitialiserTableauCommand = new RelayCommand<ParamTableau>(InitializeTableau);
         }
 
-        public ParamTableau ParamTableau { get; set; }
-        public Tableau Tableau { get; set; }
+        public List<ParamTableau> ParamTableaux { get; private set; }
+        public Tableau Tableau { get; set; } = new Tableau();
 
         public RelayCommand<Partie> DemarrerPartieCommand { get; set; }
         public RelayCommand<Joueur> ArreterPartieCommand { get; set; }
         public RelayCommand<Partie> ChangerArbitreCommand { get; set; }
+        public RelayCommand<ParamTableau> InitialiserTableauCommand { get; set; }
 
         private void InitializeParties()
         {
@@ -52,7 +54,7 @@ namespace BGayet.GIA.ViewModels
                     Statut = StatutPartie.ALancer
                 }).ToList();
 
-            Tableau.Parties = result;
+            Tableau.Parties = new ObservableCollection<Partie>(result);
         }
 
         private void InitializeTables(DataTable dt)
@@ -71,13 +73,13 @@ namespace BGayet.GIA.ViewModels
                     {
                         Table table = new Table() { Numero = numTableInt };                     
                         result.Add(table);
-                        Partie partie = Tableau.Parties.Find(x => x.Numero == param.NumPartieTableau);
+                        Partie partie = Tableau.Parties.First(x => x.Numero == param.NumPartieTableau);
                         partie.Table = table;
                     }
                 }
             }
 
-            Tableau.Tables = result;
+            Tableau.Tables = new ObservableCollection<Table>(result);
         }
 
         private void InitializeJoueurs(DataTable dt)
@@ -87,7 +89,7 @@ namespace BGayet.GIA.ViewModels
             foreach (var param in _paramTableau.ParamTableauJoueurs)
             {
                 DataRow row = dt.Rows[param.NumLigneFichier - 2];
-                Partie partie = Tableau.Parties.Find(x => x.Numero == param.NumPartieTableau);
+                Partie partie = Tableau.Parties.First(x => x.Numero == param.NumPartieTableau);
 
                 if (param.ClassementJoueur1.HasValue)
                 {
@@ -129,9 +131,9 @@ namespace BGayet.GIA.ViewModels
             Tableau.Joueurs = joueurs;
         }
 
-        private void InitializeTableau(int id)
+        private void InitializeTableau(ParamTableau param)
         {
-            Tableau = new Tableau();
+           
 
             // Sélection du fichier
             OpenFileDialog openFileDialog = new OpenFileDialog { Filter = Constants.FichierExcelFilter };
@@ -142,12 +144,12 @@ namespace BGayet.GIA.ViewModels
             DataTable dataTable = ExcelSheetHelper.ReadAsDataTable(openFileDialog.FileName);
             //DataTable dataTable = null;
             // Récupération du paramétrage
-            _dataService.GeParamTableauById(id, (item, error) =>
+            _dataService.GeParamTableauById(param.Id, (item, error) =>
             {
                 //ManageError(error);
                 _paramTableau = item;
             });
-            ParamTableau = _paramTableau;
+
             // Initialisation Parties/Joueurs/Tables
             InitializeParties();
             InitializeJoueurs(dataTable);
@@ -192,7 +194,7 @@ namespace BGayet.GIA.ViewModels
 
                 var joueursPrioritaires = _paramTableau.ParamTableauParties
                     .Where(param => param.NumPhase == paramPartie.NumPhase + 1 && param.NumPartie != 25)
-                    .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
+                    .Select(param => Tableau.Parties.First(p => p.Numero == param.NumPartie))
                     .Where(p =>
                     {
                         return p.Statut == StatutPartie.ALancer &&
@@ -208,7 +210,7 @@ namespace BGayet.GIA.ViewModels
 
                 var joueursPrioritaires1 = _paramTableau.ParamTableauParties
                     .Where(param => param.NumPhase == paramPartie.NumPhase + 1 && param.NumPartie != 25)
-                    .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
+                    .Select(param => Tableau.Parties.First(p => p.Numero == param.NumPartie))
                     .Where(p =>
                     {
                         return p.Statut == StatutPartie.ALancer &&
@@ -227,7 +229,7 @@ namespace BGayet.GIA.ViewModels
 
             if (paramPartie.NumPhase == 6)
             {
-                var partieFinale = Tableau.Parties.Find(x => x.Numero == 25);
+                var partieFinale = Tableau.Parties.First(x => x.Numero == 25);
                 joueursExclusion.Add(partieFinale.Joueur1);
                 joueursExclusion.Add(partieFinale.Joueur2);
             }
@@ -236,7 +238,7 @@ namespace BGayet.GIA.ViewModels
             {
                 _paramTableau.ParamTableauParties
                     .Where(param => param.NumPhase == 6)
-                    .Select(param => Tableau.Parties.Find(p => p.Numero == param.NumPartie))
+                    .Select(param => Tableau.Parties.First(p => p.Numero == param.NumPartie))
                     .Where(p => p.Statut == StatutPartie.ALancer).ToList()
                     .ForEach(p =>
                     {
@@ -273,7 +275,7 @@ namespace BGayet.GIA.ViewModels
 
         private void ArreterPartie(Joueur vainqueur)
         {
-            var partie = Tableau.Parties.Find(x => x.Statut == StatutPartie.EnCours && (x.Joueur1 == vainqueur || x.Joueur2 == vainqueur));
+            var partie = Tableau.Parties.First(x => x.Statut == StatutPartie.EnCours && (x.Joueur1 == vainqueur || x.Joueur2 == vainqueur));
             Joueur joueurP;
             if (partie.Joueur1 == vainqueur)
             {
@@ -333,6 +335,7 @@ namespace BGayet.GIA.ViewModels
                     if (arbitre != null)
                     {
                         p.Arbitre = arbitre;
+                        p.Arbitre.Partie = p;
                         p.Arbitre.Statut = StatutJoueur.Occupe;
                         p.Arbitre.CompteurArbitre += 1;
                         p.Statut = StatutPartie.EnAttente;

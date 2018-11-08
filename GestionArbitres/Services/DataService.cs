@@ -25,6 +25,19 @@ namespace BGayet.GIA.Services
             }
         }
 
+        public void GetAllParamTableaux(Action<List<ParamTableau>, Exception> callback)
+        {
+            try
+            {
+                using (var db = new SQLiteConnection(SQLiteDatabase.DataBasePath))
+                    callback(db.Table<ParamTableau>().ToList(), null);
+            }
+            catch (Exception ex)
+            {
+                callback(null, ex);
+            }
+        }
+
 
         public void GeTableauById(Action<Tableau, Exception> callback, int id)
         {

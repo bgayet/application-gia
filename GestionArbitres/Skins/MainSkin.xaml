@@ -5,7 +5,7 @@
                     xmlns:dat="http://schemas.microsoft.com/netfx/2009/xaml/presentation">
 
     <DataTemplate x:Key="HeaderLstArbitresTemplate">
-        <TextBlock Text="{Binding Name,StringFormat={}Liste des arbitres n°{0}}" FontWeight="Bold" Foreground="Gray" FontSize="22" VerticalAlignment="Bottom" />
+        <TextBlock Text="{Binding Name,StringFormat={}Liste des joueurs/arbitres n°{0}}" FontWeight="Bold" Foreground="Gray" FontSize="20" VerticalAlignment="Bottom" />
     </DataTemplate>
     <DataTemplate x:Key="HeaderClassementJoueursTemplate">
         <Border Background="#FFECECEC">
@@ -17,7 +17,6 @@
     <local:MyTemplateSelector x:Key="MyTemplateSelectorObj" 
              HeaderLstArbitresTemplate="{StaticResource HeaderLstArbitresTemplate}" 
              HeaderClassementJoueursTemplate="{StaticResource HeaderClassementJoueursTemplate}"/>
-
 
 
     <CollectionViewSource x:Key="cvsListeInscrits" Source="{Binding Path=Tableau.Joueurs}">

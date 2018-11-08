@@ -4,14 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:model="clr-namespace:BGayet.GIA.Models"
-        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d ignore"
         Height="570"
         Width="1200"
-        Background="#FF181818"
-        Title="GIA - Gestion Informatisée des Arbitres"
+        Title="GIA"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 
     <Window.Resources>
@@ -21,23 +19,23 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    
 
+    <Window.Background>
+        <SolidColorBrush Color="#FF181818" />
+    </Window.Background>
+    
     <DockPanel >
         <Menu x:Name="menu" DockPanel.Dock="Top">
-            <MenuItem Header="Fichier" Height="21" >
-                <MenuItem Header="Nouveau" HorizontalAlignment="Left">
-                    <MenuItem.ItemsSource>
-                        <CompositeCollection>
-                            <CollectionContainer Collection="{Binding ParamTableau}" />
-                        </CompositeCollection>
-                    </MenuItem.ItemsSource>
-                    <MenuItem.ItemContainerStyle>
-                        <Style>
-                            <Setter Property="MenuItem.Header" Value="{Binding Libelle}"/>
-                        </Style>
-                    </MenuItem.ItemContainerStyle>
-                </MenuItem>
+            <Menu.Resources>
+                <Style x:Key="MenuItemStyle" TargetType="MenuItem">
+                    <Setter Property="Header" Value="{Binding Libelle}"></Setter>
+                    <Setter Property="Command" Value="{Binding DataContext.InitialiserTableauCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
+                    <Setter Property="CommandParameter" Value="{Binding}"/>
+                </Style>
+            </Menu.Resources>
+            <MenuItem Header="Fichier">
+                <MenuItem Header="Nouveau" ItemsSource="{Binding ParamTableaux}" 
+                        ItemContainerStyle="{StaticResource MenuItemStyle}"/>
             </MenuItem>
         </Menu>
 
@@ -116,17 +114,10 @@
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                    <!--<Style TargetType="{x:Type ListViewItem}">
-                        <Setter Property="Foreground" Value="Black" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Statut}" Value="{x:Static model:StatutJoueur.Occupe}">
-                                <Setter Property="Background" Value="#FF56D1FF" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>-->
                 </ListView.ItemContainerStyle>
             </ListView>
-
+            
+            <!-- Tableau parties-->
             <DockPanel>
                 <ItemsControl DockPanel.Dock="Top" Foreground="WhiteSmoke">
                     <ItemsControl.ItemTemplate>
@@ -134,8 +125,8 @@
                             <TextBlock Text="{Binding}" Margin="4" HorizontalAlignment="Center" FontWeight="Bold" FontSize="10"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
-                    <system:String >F. KO</system:String>
-                    <system:String>1/2 KO</system:String>
+                        <system:String >F. KO</system:String>
+                        <system:String>1/2 KO</system:String>
                         <system:String>1/4 KO</system:String>
                         <system:String>1/8</system:String>
                         <system:String>1/4 OK</system:String>
@@ -147,9 +138,8 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-                
-                
-            <ItemsControl ItemsSource="{Binding Tableau.Parties}" >
+
+                <ItemsControl ItemsSource="{Binding Tableau.Parties}" Tag="{Binding ElementName=outerControl, Path=DataContext}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                             <Border BorderThickness="2" Padding="0">
@@ -158,12 +148,12 @@
                                         <MouseBinding
                                                 Command="{Binding DataContext.DemarrerPartieCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                MouseAction="LeftDoubleClick" />
+                                                MouseAction="LeftDoubleClick"/>
                                     </Grid.InputBindings>
                                     <Grid.ContextMenu>
-                                        <ContextMenu>
+                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                             <MenuItem Header="Changer d'arbitre">
-                                                <MenuItem Header="Autre" Command="{Binding Main.ChangerArbitreCommand, Source={StaticResource Locator}}"
+                                                <MenuItem Header="Autre" Command="{Binding ChangerArbitreCommand}"
                                                 CommandParameter="{Binding}"/>
                                             </MenuItem>
                                         </ContextMenu>

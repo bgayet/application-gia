@@ -40,6 +40,7 @@ namespace BGayet.GIA.Models
             set
             {
                 Set(ref _partie, value);
+                RaisePropertyChanged(() => EstArbitre);
             }
         }
 
@@ -50,6 +51,13 @@ namespace BGayet.GIA.Models
         public string Nom { get; set; }
         public string Prenom { get; set; }
         public Groupe Groupe { get; set; }
+    }
+
+    public class EtatJoueur
+    {
+        public bool EstAbsent { get; set; }
+        public bool EstForfait{ get; set; }
+
     }
 
     public enum StatutJoueur

@@ -140,6 +140,7 @@
     <Compile Include="Models\Tableau.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\ExcelSheetHelper.cs" />
+    <Compile Include="Utils\ExtensionMethods.cs" />
     <Compile Include="Utils\StringEnumHelper.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
@@ -204,7 +205,6 @@
     <Content Include="00-DataBase\data.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Resource Include="Images\a-icon.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
